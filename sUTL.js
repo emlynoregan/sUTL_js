@@ -27,7 +27,7 @@
         else
             return adefault
     }
-    
+
     function builtins()
     {
         return {
@@ -104,6 +104,26 @@
             "/": function(parentscope, scope, source, tt)
             {
                 return get(scope, "a", 1) / get(scope, "b", 1)
+            },
+            "==": function(parentscope, scope, source, tt)
+            {
+                return get(scope, "a", 0) == get(scope, "b", 0)
+            },
+            ">=": function(parentscope, scope, source, tt)
+            {
+                return get(scope, "a", 0) >= get(scope, "b", 0)
+            },
+            "<=": function(parentscope, scope, source, tt)
+            {
+                return get(scope, "a", 0) <= get(scope, "b", 0)
+            },
+            ">": function(parentscope, scope, source, tt)
+            {
+                return get(scope, "a", 0) > get(scope, "b", 0)
+            },
+            "<": function(parentscope, scope, source, tt)
+            {
+                return get(scope, "a", 0) < get(scope, "b", 0)
             },
             "if": function(parentscope, scope, source, tt)
             {
