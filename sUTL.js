@@ -105,7 +105,7 @@
             {
                 return get(scope, "a", 1) / get(scope, "b", 1)
             },
-            "==": function(parentscope, scope, source, tt)
+            "=": function(parentscope, scope, source, tt)
             {
                 return get(scope, "a", 0) == get(scope, "b", 0)
             },
