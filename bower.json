@@ -1,0 +1,36 @@
+{
+  "name": "sUTL_js",
+  "version": "0.0.1",
+  "main": "sUTL.js",
+  "license": "emlynoregan",
+  "ignore": [
+    "**/.*",
+    "build",
+    "speed",
+    "test",
+    "*.md",
+    "AUTHORS.txt",
+    "Gruntfile.js",
+    "package.json",
+    "node_modules",
+    "bower_components",
+    "tests"
+  ],
+  "keywords": [
+    "transform",
+    "json",
+    "javascript",
+    "library"
+  ],
+  "homepage": "https://github.com/emlynoregan/sUTL_js",
+  "authors": [
+    "Emlyn O'Regan <emlynoregan@gmail.com>", 
+    "John Hardy <jh@lagado.com>"
+  ],
+  "description": "sUTL Universal Transformation Language for Javascript",
+  "moduleType": [
+    "amd",
+    "globals",
+    "node"
+  ]
+}

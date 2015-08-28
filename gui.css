@@ -1,0 +1,46 @@
+#edSource { 
+/*     position: absolute;
+    top: 20;
+    right: 20;
+    bottom: 20;
+    left: 20; */
+    height: 400px;
+}
+
+#edTransform { 
+/*     position: absolute;
+    top: 20;
+    right: 20;
+    bottom: 20;
+    left: 20; */
+    height: 400px;
+}
+
+#edResult { 
+/*     position: absolute;
+    top: 20;
+    right: 20;
+    bottom: 20;
+    left: 20; */
+    height: 400px;
+}
+
+.message{
+    color: red;
+}
+
+.floatleft{
+    float: left;
+}
+
+#logo{
+    height: 100px;
+    float: right;
+}
+
+#smalllogo{
+    float: left;
+    height: 60px;
+    margin-right: 10px;
+}
+
