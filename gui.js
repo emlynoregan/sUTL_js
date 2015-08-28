@@ -96,8 +96,111 @@ var setStoredText = function(aKey, aValue)
     }
 }
 
-edSource.setValue(getStoredText("sourceTextsUTL", "{}"))
+var _defaultSource = {
+  "head": "#@.in[0]" ,
+  "tail": "##@.in[1:]",
+  "back": "##@.in[-1:]",
+  "front": "##@.in[:-1]",
+  "append": [
+    "&&", 
+    "#@.head",
+    "#@.tail"
+  ],
+  "reverse": 
+  {
+    "&": "if",
+    "cond": "#@.in",
+    "true": 
+    {"'": 
+      [
+        "&&",
+        {
+          "!": "#$.reverse",
+          "in": 
+          {
+            "!": "#$.tail",
+            "in": "#@.in"
+          }
+        },
+        {
+          "!": "#$.head",
+          "in": "#@.in"
+        }
+      ]
+    },
+    "false": {"'": []}
+  },
+  "add3": {
+    "&": "+",
+    "a": "#@.item",
+    "b": 3
+  },
+  "map":   {
+    "&": "if",
+    "cond": "#@.list",
+    "true": 
+    {"'": 
+      [
+        "&&",
+        {
+          "!": "#@.t",
+          "item": {
+            "!": "#$.head",
+            "in": "#@.list"
+          }
+        },
+        {
+          "!": "#$.map",
+          "list": 
+          {
+            "!": "#$.tail",
+            "in": "#@.list"
+          },
+          "t": "#@.t"
+        }
+      ]
+    },
+    "false": {"'": []}
+  }
+}
+
+var _defaultTransform = {
+  "div": {
+    "&": "=", 
+    "a": {
+      "&": "+",
+      "a": 3, 
+      "b": 4
+    }, 
+    "b": -2
+  },
+  "mapper1": {
+    "!": "#$.map",
+    "list": [1,2, 3],
+    "t": "#$.add3"
+  },
+  "mapper2": {
+    "!": "#$.map",
+    "list": [1,2, 3],
+    "t": {"'": {
+      "&": "+",
+      "a": "#@.item",
+      "b": 3
+    }}
+  },
+  "backer": {
+    "!": "#$.back",
+    "in": [1, 2, 4, 6, 7, 3, 9]
+  },
+  "fronter": {
+    "!": "#$.front",
+    "in": [1, 2, 4, 6, 7, 3, 9]
+  }
+}
+
+
+edSource.setValue(getStoredText("sourceTextsUTL",  JSON.stringify(_defaultSource, null, 2)))
 edSource.gotoLine(0);
-edTransform.setValue(getStoredText("transformTextsUTL", "{}"))
+edTransform.setValue(getStoredText("transformTextsUTL", JSON.stringify(_defaultTransform, null, 2)))
 edTransform.gotoLine(0);
 
