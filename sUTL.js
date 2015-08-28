@@ -20,6 +20,14 @@
     sUTL.version = '0.0.0';
     sUTL.transform = transform;
 
+    function get(scope, key, adefault)
+    {
+        if (key in scope)
+            return scope[key]
+        else
+            return adefault
+    }
+    
     function builtins()
     {
         return {
@@ -61,32 +69,41 @@
 
                 return retval
             },
-            "cons": function(parentscope, scope, source, tt)
+//             "cons": function(parentscope, scope, source, tt)
+//             {
+//                 var head = scope["head"]
+//                 var tail = scope["tail"]
+
+//                 var retval = [head]
+
+//                 if (tail)
+//                     retval = retval.concat(tail)
+
+//                 return retval
+//             },
+//             "last": function(parentscope, scope, source, tt)
+//             {
+//                 var lin = scope["in"]
+
+//                 var retval = lin[lin.length-1]
+
+//                 return retval
+//             },
+            "+": function(parentscope, scope, source, tt)
             {
-                var head = scope["head"]
-                var tail = scope["tail"]
-
-                var retval = [head]
-
-                if (tail)
-                    retval = retval.concat(tail)
-
-                return retval
+                return get(scope, "a", 0) + get(scope, "b", 0)
             },
-            "last": function(parentscope, scope, source, tt)
+            "-": function(parentscope, scope, source, tt)
             {
-                var lin = scope["in"]
-
-                var retval = lin[lin.length-1]
-
-                return retval
+                return get(scope, "a", 0) - get(scope, "b", 0)
             },
-            "add": function(parentscope, scope, source, tt)
+            "*": function(parentscope, scope, source, tt)
             {
-                var a = scope["a"]
-                var b = scope["b"]
-
-                return a + b
+                return get(scope, "a", 1) * get(scope, "b", 1)
+            },
+            "/": function(parentscope, scope, source, tt)
+            {
+                return get(scope, "a", 1) / get(scope, "b", 1)
             },
             "if": function(parentscope, scope, source, tt)
             {
