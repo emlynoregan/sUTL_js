@@ -64,14 +64,14 @@ var UpdateResult = function()
 
 edSource.getSession().on('change', function(e) {
     ValidateJson(edSource, "#sourcemsg");
-    setStoredText("sourceText", edSource.getValue())
+    setStoredText("sourceTextsUTL", edSource.getValue())
     UpdateActions();
     UpdateResult();
 });
 
 edTransform.getSession().on('change', function(e) {
     ValidateJson(edTransform, "#transformmsg");
-    setStoredText("transformText", edTransform.getValue())
+    setStoredText("transformTextsUTL", edTransform.getValue())
     UpdateActions();
     UpdateResult();
 });
@@ -96,8 +96,8 @@ var setStoredText = function(aKey, aValue)
     }
 }
 
-edSource.setValue(getStoredText("sourceText", "{}"))
+edSource.setValue(getStoredText("sourceTextsUTL", "{}"))
 edSource.gotoLine(0);
-edTransform.setValue(getStoredText("transformText", "{}"))
+edTransform.setValue(getStoredText("transformTextsUTL", "{}"))
 edTransform.gotoLine(0);
 
