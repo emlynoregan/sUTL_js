@@ -194,33 +194,6 @@ var _defaultSource = {
     "&": "+",
     "a": "#@.item",
     "b": 3
-  },
-  "map":   {
-    "&": "if",
-    "cond": "#@.list",
-    "true": 
-    {"'": 
-      [
-        "&&",
-        {
-          "!": "#@.t",
-          "item": {
-            "!": "#$.head",
-            "in": "#@.list"
-          }
-        },
-        {
-          "!": "#$.map",
-          "list": 
-          {
-            "!": "#$.tail",
-            "in": "#@.list"
-          },
-          "t": "#@.t"
-        }
-      ]
-    },
-    "false": {"'": []}
   }
 }
 
@@ -239,12 +212,12 @@ var _defaultTransform =
       "b": -2
     },
     "mapper1": {
-      "!": "#$.map",
+      "!": "#*.map_l",
       "list": [1,2, 3],
       "t": "#$.add3"
     },
     "mapper2": {
-      "!": "#$.map",
+      "!": "#*.map_l",
       "list": [1,2, 3],
       "t": {"'": {
         "&": "+",
@@ -260,7 +233,8 @@ var _defaultTransform =
       "!": "#$.front",
       "in": [1, 2, 4, 6, 7, 3, 9]
     }
-  }
+  },
+  "requires": ["map_l"]
 }
 
 edSource.setValue(getStoredText("sourceTextsUTL2",  JSON.stringify(_defaultSource, null, 2)))
