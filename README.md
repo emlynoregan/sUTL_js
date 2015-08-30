@@ -3,6 +3,8 @@ sUTL Universal Transformation Language
 
 This is a javascript implementation of sUTL
 
+[Read the specification here](https://github.com/emlynoregan/sUTL-spec)
+
 Usage:
 Just grab the file sUTL.js and use it like this:
 
