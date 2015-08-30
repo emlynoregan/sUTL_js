@@ -40,6 +40,20 @@ var UpdateActions = function()
 
 }
 
+var distribution = [
+  {
+    "name": "fred_l_emlynoregan_com",
+    "language": "sUTL0",
+    "transform-t": "fred!!!"
+  },
+  {
+    "name": "fredlist_l_emlynoregan_com",
+    "language": "sUTL0",
+    "transform-t": [ "#*.fred_l", "#*.fred_l" ],
+    "requires": ["fred_l"]
+  }
+]
+
 var UpdateResult = function()
 {
     if (!(EditorIsInvalid(edSource) || EditorIsInvalid(edTransform)))
@@ -49,7 +63,20 @@ var UpdateResult = function()
 
         try
         {
-            lresult = sUTL.transform(lsourceJson, ltransformJson)
+            var lresult = null;
+
+            var ltransform = "transform-t" in ltransformJson ? ltransformJson["transform-t"] : null;
+
+            var clresult = sUTL.compilelib([ltransformJson], [distribution], true)
+
+            if ("fail" in clresult)
+            {
+              lresult = clresult["fail"]
+            }
+            else
+            {
+              lresult = sUTL.evaluate(lsourceJson, ltransform, clresult["lib"] || {})
+            }
 
             edResult.setValue(JSON.stringify(lresult, null, space=2))
             edResult.gotoLine(0);

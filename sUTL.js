@@ -18,23 +18,23 @@
     //exports
     sUTL.name = 'sUTL.js';
     sUTL.version = '0.0.0';
-    sUTL.transform = transform;
+    sUTL.evaluate = evaluate;
+    sUTL.compilelib = compilelib;
 
-    function get(scope, key, adefault)
+    function get(obj, key, def)
     {
-        if (key in scope)
-            return scope[key]
+        if (key in obj)
+            return obj[key]
         else
-            return adefault
+            return def
     }
 
     function builtins()
     {
         return {
-            "path": function(parentscope, scope, source, tt)
+            "path": function(parentscope, scope, l, src, tt, b)
             {
-                var fullpath = scope["path"]
-                var unwrap = scope["unwrap"]
+                var fullpath = get(scope, "path", "")
 
                 var prefix = fullpath.slice(0, 1)
                 var path = fullpath.slice(1)
@@ -44,106 +44,91 @@
                 {
                     childscope = parentscope
                 }
-                if (prefix == '^')
+                else if (prefix == '^')
                 {
-                    childscope = scope
+                    childscope = scope // is this even a thing?
+                }
+                else if (prefix == '*')
+                {
+                    childscope = l
                 }
                 else if (prefix == '$')
                 {
-                    childscope = source
+                    childscope = src
                 }
                 else if (prefix == '~')
                 {
                     childscope = tt
                 }
 
-                var retval = jsonPath(childscope, "$" + path)
-
-                if (unwrap)
+                if (childscope)
                 {
-                    if (retval.length > 0)
-                        retval = retval[0]
-                    else
-                        retval = null
+                    return jsonPath(childscope, "$" + path) || []
                 }
-
-                return retval
+                else
+                {
+                    return [];
+                }
             },
-//             "cons": function(parentscope, scope, source, tt)
-//             {
-//                 var head = scope["head"]
-//                 var tail = scope["tail"]
-
-//                 var retval = [head]
-
-//                 if (tail)
-//                     retval = retval.concat(tail)
-
-//                 return retval
-//             },
-//             "last": function(parentscope, scope, source, tt)
-//             {
-//                 var lin = scope["in"]
-
-//                 var retval = lin[lin.length-1]
-
-//                 return retval
-//             },
-            "+": function(parentscope, scope, source, tt)
+            "+": function(parentscope, scope, l, src, tt, b)
             {
                 return get(scope, "a", 0) + get(scope, "b", 0)
             },
-            "-": function(parentscope, scope, source, tt)
+            "-": function(parentscope, scope, l, src, tt, b)
             {
                 return get(scope, "a", 0) - get(scope, "b", 0)
             },
-            "*": function(parentscope, scope, source, tt)
+            "*": function(parentscope, scope, l, src, tt, b)
             {
                 return get(scope, "a", 1) * get(scope, "b", 1)
             },
-            "/": function(parentscope, scope, source, tt)
+            "/": function(parentscope, scope, l, src, tt, b)
             {
                 return get(scope, "a", 1) / get(scope, "b", 1)
             },
-            "=": function(parentscope, scope, source, tt)
+            "=": function(parentscope, scope, l, src, tt, b)
             {
                 return get(scope, "a", 0) == get(scope, "b", 0)
             },
-            ">=": function(parentscope, scope, source, tt)
+            "!=": function(parentscope, scope, l, src, tt, b)
+            {
+                return get(scope, "a", 0) != get(scope, "b", 0)
+            },
+            ">=": function(parentscope, scope, l, src, tt, b)
             {
                 return get(scope, "a", 0) >= get(scope, "b", 0)
             },
-            "<=": function(parentscope, scope, source, tt)
+            "<=": function(parentscope, scope, l, src, tt, b)
             {
                 return get(scope, "a", 0) <= get(scope, "b", 0)
             },
-            ">": function(parentscope, scope, source, tt)
+            ">": function(parentscope, scope, l, src, tt, b)
             {
                 return get(scope, "a", 0) > get(scope, "b", 0)
             },
-            "<": function(parentscope, scope, source, tt)
+            "<": function(parentscope, scope, l, src, tt, b)
             {
                 return get(scope, "a", 0) < get(scope, "b", 0)
             },
-            "if": function(parentscope, scope, source, tt)
+            "if": function(parentscope, scope, l, src, tt, b)
             {
                 var retval = null;
                 var condvalue = false;
 
                 if ("cond" in scope)
-                    condvalue = Evaluate(parentscope, scope["cond"], source, tt)
+                    condvalue = _evaluate(parentscope, scope["cond"], l, src, tt, b)
                     if (isArray(condvalue) && condvalue.length == 0)
                         condvalue = false
 
                 if (condvalue)
                 {
                     if ("true" in scope)
-                        retval = Evaluate(parentscope, scope["true"], source, tt)
+                        retval = _evaluate(parentscope, scope["true"], l, src, tt, b)
                 }
                 else
                 {
                     if ("false" in scope)
-                        retval = Evaluate(parentscope, scope["false"], source, tt)
+                        retval = _evaluate(parentscope, scope["false"], l, src, tt, b)
                 }
 
                 return retval
@@ -151,102 +136,150 @@
         }
     }
 
-    function transform(source, t) 
+    function evaluate(src, tt, l) 
     {
-        return Evaluate(source, t, source, t)
+        return _evaluate(src, tt, l, src, tt, builtins())
     }
 
-    function Evaluate(scope, t, source, tt)
+    function _evaluate(s, t, l, src, tt, b)
     {
-        var retval = null;
-        
-        if (isBuiltinEval(t)) 
+        if (isEval(t))
         {
-            var builtinf = builtins()[t["&"]]
-            if (!builtinf)
-            {
-                throw {"message": "builtin '" + t["&"] + "' not found"}
-            }
-            else
-            {
-                var transformedt = {}
-                for (key in t)
-                {
-                    if (key != "&")
-                    {
-                        transformedt[key] = Evaluate(scope, t[key], source, tt)
-                    }
-                }
-
-                retval = builtinf(scope, transformedt, source, tt)
-            }
+            return _evaluateEval(s, t, l, src, tt, b)
         }
-        else if (isSimpleEval(t))
+        else if (isBuiltinEval(t))
         {
-            var transform = Evaluate(scope, t["!"], source, tt)
-
-            var transformscope = {}
-            for (key in t)
-            {
-                if (key != "!")
-                {
-                    transformscope[key] = Evaluate(scope, t[key], source, tt)
-                }
-            }
-
-            retval = Evaluate(transformscope, transform, source, tt)
+            return _evaluateBuiltin(s, t, l, src, tt, b)
         }
         else if (isQuoteEval(t))
         {
-            retval = t["'"]
+            return t["'"]
         }
-        else if (isObject(t)) 
+        else if (isDictTransform(t))
         {
-            retval = {}
-            for (var key in t)
-            {
-                retval[key] = Evaluate(scope, t[key], source, tt)
-            }
+            return _evaluateDict(s, t, l, src, tt, b)
         }
-        else if (isArray(t)) 
+        else if (isListTransform(t))
         {
-            retval = []
-            var unwrap = false
-            for (var ix in t)
-            {
-                if (ix == 0 && t[ix] == "&&")
-                {
-                    unwrap = true
-                    continue;
-                }
-                var itemresult = Evaluate(scope, t[ix], source, tt)
-                if (unwrap && isArray(itemresult))
-                    retval = retval.concat(itemresult)
-                else 
-                    retval.push(itemresult)
-            }
-        } 
-        else if (isPath(t)) 
-        {
-            retval = Evaluate(scope, {"&": "path", "unwrap": false, "path": t.slice(2)}, source, tt)
-        } 
-        else if (isUnwrapPath(t)) 
-        {
-            retval = Evaluate(scope, {"&": "path", "unwrap": true, "path": t.slice(1)}, source, tt)
-        } 
-        else 
-        {
-            retval = t;
+            if (t.length > 0 && t[0] == "&&")
+                return _flatten(_evaluateList(s, t.slice(1), l, src, tt, b))
+            else
+                return _evaluateList(s, t, l, src, tt, b)
         }
-        
-        return retval;
+        else if (isPathTransform(t))
+        {
+            return _evaluatePath(s, t.slice(2), l, src, tt, b)
+        }
+        else if (isPathHeadTransform(t))
+        {
+            return _evaluatePathHead(s, t.slice(1), l, src, tt, b)
+        }
+        else
+        {
+            return t; // simple transform
+        }
     }
     
+    function _evaluateBuiltin(s, t, l, src, tt, b)
+    {
+        var retval = null;
+
+        var builtinf = get(b, t["&"], null);
+
+        if (builtinf)
+        {
+            var s2 = _evaluateDict(s, t, l, src, tt, b)
+
+            var l2 = l;
+            if ("*" in t)
+            {
+                l2 = _evaluateDict(s, t["*"], l, src, tt, b)
+            }
+
+            retval = builtinf(s, s2, l2, src, tt, b)
+        }
+
+        return retval
+    }
+
+    function _evaluateEval(s, t, l, src, tt, b)
+    {
+        var t2 = _evaluate(s, t["!"], l, src, tt, b)
+
+        var s2 = _evaluateDict(s, t, l, src, tt, b)
+
+        var l2 = l;
+        if ("*" in t)
+        {
+            l2 = _evaluateDict(s, t["*"], l, src, tt, b)
+        }
+
+        return _evaluate(s2, t2, l2, src, tt, b)
+    }
+
+    function _evaluateDict(s, t, l, src, tt, b)
+    {
+        var retval = {}
+        for (var key in t)
+        {
+            if ((key != "!") && (key != "&"))
+                retval[key] = _evaluate(s, t[key], l, src, tt, b);
+        }
+        return retval
+    }
+
+    function _evaluateList(s, t, l, src, tt, b)
+    {
+        var retval = []
+        for (var ix in t)
+        {
+            retval.push(_evaluate(s, t[ix], l, src, tt, b))
+        }
+        return retval
+    }
+
+    function _evaluatePathHead(s, t, l, src, tt, b)
+    {
+        var resultlist = _evaluatePath(s, t, l, src, tt, b)
+
+        if (resultlist.length)
+            return resultlist[0]
+        else
+            return null;
+    }
+
+    function _evaluatePath(s, t, l, src, tt, b)
+    {
+        var path_t = {
+            "&": "path",
+            "path": t
+        }
+
+        return _evaluate(s, path_t, l, src, tt, b)
+    }
+
+    function _flatten(lst)
+    {
+        var retval = []
+        for (var ix in lst)
+        {
+            if (isArray(lst[ix]))
+            {
+                retval = retval.concat(lst[ix])
+            }
+            else
+            {
+                retval.push(lst[ix])
+            }
+        }
+        return retval;
+    }
+
     function isBuiltinEval(obj) {
         return isObject(obj) && "&" in obj;
     }
 
-    function isSimpleEval(obj) {
+    function isEval(obj) {
         return isObject(obj) && "!" in obj;
     }
 
@@ -254,6 +287,14 @@
         return isObject(obj) && "'" in obj;
     }
 
+    function isDictTransform(obj) {
+        return !isArray(obj) && obj === Object(obj);
+    }
+    
+    function isListTransform(obj) {
+        return Array.isArray(obj)
+    }
+    
     function isObject(obj) {
         return !isArray(obj) && obj === Object(obj);
     }
@@ -261,17 +302,158 @@
     function isArray(obj) {
         return Array.isArray(obj)
     }
-    
+
     function isString(obj) {
         return (typeof obj === 'string' || obj instanceof String);
     }
 
-    function isPath(obj) {
+    function isPathHeadTransform(obj) {
+        return isString(obj) && obj.slice(0, 1) == "#";
+    }
+
+    function isPathTransform(obj) {
         return isString(obj) && obj.slice(0, 2) == "##";
     }
 
-    function isUnwrapPath(obj) {
-        return isString(obj) && obj.slice(0, 1) == "#";
+    function compilelib(decls, dists, test)
+    {
+        return _compilelib(decls, dists, {}, test, builtins())
+    }
+
+    function _compilelib(decls, dists, l, test, b)
+    {
+        // construct list of names of all required decls not already in the library
+        var all_candidate_decls = {}
+
+        for (var dkey in decls)
+        {
+            var decl = decls[dkey]
+            if ("requires" in decl)
+            {
+                for (var nix in decl["requires"])
+                {
+                    var reqname = decl["requires"][nix]
+                    if (! (reqname in l))
+                        all_candidate_decls[reqname] = [];
+                }
+            }
+        }
+
+        // get list of candidate decls for each reqname
+        for (var reqname in all_candidate_decls)
+        {
+            for (var distkey in dists)
+            {
+                var dist = dists[distkey]
+                for (var dkey in dist)
+                {
+                    var decl = dist[dkey]
+                    var declname = decl["name"] || ""
+                    if (isPrefix(reqname, declname))
+                    {
+                        all_candidate_decls[reqname].push(decl)
+                    }
+                }
+            }
+        }
+
+        // here all_candidate_decls is a dict of candidate_decls by name in decl requires
+
+        var resultlib = {};
+        var resultliblib = {};
+
+        for (var key in l)
+        {
+            resultlib[key] = l[key]
+        }
+
+        var fails = []
+
+        for (var reqname in all_candidate_decls)
+        {
+            var candidate_decls = all_candidate_decls[reqname]
+
+            if (candidate_decls)
+            {
+                var fails2total = []
+                for (var cdix in candidate_decls)
+                {
+                    var candidate_decl = candidate_decls[cdix]
+
+                    var clresult = _compilelib([candidate_decl], dists, resultlib, test, b)
+
+                    if ("fail" in clresult)
+                    {
+                        fails2total = fails2total.concat(clresult["fail"])
+                    }
+                    else if ("lib" in clresult)
+                    {
+                        fails2total = [] // not a fail
+
+                        for (var libkey in clresult["lib"])
+                        {
+                            resultlib[libkey] = clresult["lib"][libkey]
+                        }
+                        resultliblib[reqname] = clresult["lib"]
+
+                        resultlib[reqname] = get(candidate_decl, "transform-t", null)
+
+                        break;
+                    }
+                }
+
+                if (fails2total.length)
+                {
+                    fails = fails.concat(fails2total)
+                }
+            }
+        }
+
+        // here resultlib contains everything we could find for reqnames
+
+        if (test)
+        {
+            for (var dkey in decls)
+            {
+                var decl = decls[dkey]
+                var declreq = {}
+                var declrequires = get(decl, "requires", [])
+                for (var declreqix in declrequires)
+                {
+                    declreq[declrequires[declreqix]] = null;
+                } 
+                
+                // decllib is resultlib filtered by names in decl.requires
+                var decllib = {}
+                for (var lname in resultlib)
+                {
+                    if (lname in declreq)
+                    {
+                        decllib[lname] = resultlib[lname]
+                        for (var llname in resultliblib[lname])
+                        {
+                            decllib[llname] = resultliblib[lname][llname]
+                        }
+                    }
+                } 
+                
+                // evaluate the test. If truthy, the test fails
+                var fail = evaluate(get(decl, "transform-t", null), get(decl, "test-t", null), decllib)
+                if (fail)
+                    fails.push(fail)
+            }
+        } 
+
+        if (fails.length)
+            return {"fail": fails}
+        else
+            return {"lib": resultlib}
+    }
+
+
+    function isPrefix(str1, str2)
+    {
+        return str2.indexOf(str1) === 0
     }
 
     /* JSONPath 0.8.5 - XPath for JSON
