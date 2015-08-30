@@ -322,22 +322,52 @@
 
     function _compilelib(decls, dists, l, test, b)
     {
+        var resultlib = {};
+        var resultliblib = {};
+
+        for (var key in l)
+        {
+            resultlib[key] = l[key]
+        }
+
         // construct list of names of all required decls not already in the library
         var all_candidate_decls = {}
 
         for (var dkey in decls)
         {
             var decl = decls[dkey]
+            var declname = get(decl, "name", "")
             if ("requires" in decl)
             {
                 for (var nix in decl["requires"])
                 {
                     var reqname = decl["requires"][nix]
                     if (! (reqname in l))
-                        all_candidate_decls[reqname] = [];
+                    {
+                        if (isPrefix(reqname, declname))
+                        {
+                            resultlib[reqname] = get(decl, "transform-t", null)
+                        }
+                        else
+                        {
+                            all_candidate_decls[reqname] = [];
+                        }
+                    }
                 }
             }
         }
+
+//         for (var declix in decls)
+//         {
+//             var decl = decls[declix]
+//             var declname = get(decl, "name", null)
+
+//             if (declname in all_candidate_decls)
+//             {
+//                 resultlib[declname] = decl
+//                 delete all_candidate_decls[declname]
+//             } 
+//         }
 
         // get list of candidate decls for each reqname
         for (var reqname in all_candidate_decls)
@@ -358,14 +388,6 @@
         }
 
         // here all_candidate_decls is a dict of candidate_decls by name in decl requires
-
-        var resultlib = {};
-        var resultliblib = {};
-
-        for (var key in l)
-        {
-            resultlib[key] = l[key]
-        }
 
         var fails = []
 

@@ -51,6 +51,39 @@ var distribution = [
     "language": "sUTL0",
     "transform-t": [ "#*.fred_l", "#*.fred_l" ],
     "requires": ["fred_l"]
+  },
+  {
+    "name": "map_l_emlynoregan_com",
+    "language": "sUTL0",
+    "transform-t": 
+    {
+      "&": "if",
+      "cond": "#@.list",
+      "true": {
+        "'": [
+          "&&",
+          {
+            "!": "#@.t",
+            "item": {
+              "!": "#$.head",
+              "in": "#@.list"
+            }
+          },
+          {
+            "!": "#*.map_l_emlynoregan_com",
+            "list": {
+              "!": "#$.tail",
+              "in": "#@.list"
+            },
+            "t": "#@.t"
+          }
+        ]
+      },
+      "false": {
+        "'": []
+      }
+    },
+    "requires": ["map_l_emlynoregan_com"]
   }
 ]
 
@@ -91,14 +124,14 @@ var UpdateResult = function()
 
 edSource.getSession().on('change', function(e) {
     ValidateJson(edSource, "#sourcemsg");
-    setStoredText("sourceTextsUTL", edSource.getValue())
+    setStoredText("sourceTextsUTL2", edSource.getValue())
     UpdateActions();
     UpdateResult();
 });
 
 edTransform.getSession().on('change', function(e) {
     ValidateJson(edTransform, "#transformmsg");
-    setStoredText("transformTextsUTL", edTransform.getValue())
+    setStoredText("transformTextsUTL2", edTransform.getValue())
     UpdateActions();
     UpdateResult();
 });
@@ -191,43 +224,47 @@ var _defaultSource = {
   }
 }
 
-var _defaultTransform = {
-  "div": {
-    "&": "=", 
-    "a": {
-      "&": "+",
-      "a": 3, 
-      "b": 4
-    }, 
-    "b": -2
-  },
-  "mapper1": {
-    "!": "#$.map",
-    "list": [1,2, 3],
-    "t": "#$.add3"
-  },
-  "mapper2": {
-    "!": "#$.map",
-    "list": [1,2, 3],
-    "t": {"'": {
-      "&": "+",
-      "a": "#@.item",
-      "b": 3
-    }}
-  },
-  "backer": {
-    "!": "#$.back",
-    "in": [1, 2, 4, 6, 7, 3, 9]
-  },
-  "fronter": {
-    "!": "#$.front",
-    "in": [1, 2, 4, 6, 7, 3, 9]
+var _defaultTransform = 
+{
+  "language": "sUTL0",
+  "transform-t": 
+  {
+    "div": {
+      "&": "=", 
+      "a": {
+        "&": "+",
+        "a": 3, 
+        "b": 4
+      }, 
+      "b": -2
+    },
+    "mapper1": {
+      "!": "#$.map",
+      "list": [1,2, 3],
+      "t": "#$.add3"
+    },
+    "mapper2": {
+      "!": "#$.map",
+      "list": [1,2, 3],
+      "t": {"'": {
+        "&": "+",
+        "a": "#@.item",
+        "b": 3
+      }}
+    },
+    "backer": {
+      "!": "#$.back",
+      "in": [1, 2, 4, 6, 7, 3, 9]
+    },
+    "fronter": {
+      "!": "#$.front",
+      "in": [1, 2, 4, 6, 7, 3, 9]
+    }
   }
 }
 
-
-edSource.setValue(getStoredText("sourceTextsUTL",  JSON.stringify(_defaultSource, null, 2)))
+edSource.setValue(getStoredText("sourceTextsUTL2",  JSON.stringify(_defaultSource, null, 2)))
 edSource.gotoLine(0);
-edTransform.setValue(getStoredText("transformTextsUTL", JSON.stringify(_defaultTransform, null, 2)))
+edTransform.setValue(getStoredText("transformTextsUTL2", JSON.stringify(_defaultTransform, null, 2)))
 edTransform.gotoLine(0);
 
