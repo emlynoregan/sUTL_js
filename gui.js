@@ -104,85 +104,20 @@ var setStoredText = function(aKey, aValue)
     }
 }
 
-var _defaultSource = {
-  "head": "#@.in[0]" ,
-  "tail": "##@.in[1:]",
-  "back": "##@.in[-1:]",
-  "front": "##@.in[:-1]",
-  "append": [
-    "&&", 
-    "#@.head",
-    "#@.tail"
-  ],
-  "reverse": 
-  {
-    "&": "if",
-    "cond": "#@.in",
-    "true": 
-    {"'": 
-      [
-        "&&",
-        {
-          "!": "#$.reverse",
-          "in": 
-          {
-            "!": "#$.tail",
-            "in": "#@.in"
-          }
-        },
-        {
-          "!": "#$.head",
-          "in": "#@.in"
-        }
-      ]
-    },
-    "false": {"'": []}
-  },
-  "add3": {
-    "&": "+",
-    "a": "#@.item",
-    "b": 3
-  }
-}
+var _defaultSource = [1, 2, 3, 4]
 
 var _defaultTransform = 
 {
   "language": "sUTL0",
-  "transform-t": 
-  {
-    "div": {
-      "&": "=", 
-      "a": {
-        "&": "+",
-        "a": 3, 
-        "b": 4
-      }, 
-      "b": -2
-    },
-    "mapper1": {
-      "!": "#*.map_l",
-      "list": [1,2, 3],
-      "t": "#$.add3"
-    },
-    "mapper2": {
-      "!": "#*.map_l",
-      "list": [1,2, 3],
-      "t": {"'": {
-        "&": "+",
-        "a": "#@.item",
-        "b": 3
-      }}
-    },
-    "backer": {
-      "!": "#$.back",
-      "in": [1, 2, 4, 6, 7, 3, 9]
-    },
-    "fronter": {
-      "!": "#$.front",
-      "in": [1, 2, 4, 6, 7, 3, 9]
+  "transform-t": {
+    "sum": {
+      "!": "#*.sum_core",
+      "list": "#$"
     }
   },
-  "requires": ["map_l"]
+  "requires": [
+    "sum_core"
+  ]
 }
 
 $(document).ready(function(){
