@@ -31,7 +31,7 @@
 
     function builtins()
     {
-        return {
+        var retval = {
             "path": function(parentscope, scope, l, src, tt, b)
             {
                 var fullpath = get(scope, "path", "")
@@ -134,6 +134,16 @@
                 return retval
             }
         }
+
+        for (var key in retval)
+        {
+            retval["has" + key] = function(parentscope, scope, l, src, tt, b)
+            {
+                return true
+            }
+        }
+
+        return retval
     }
 
     function evaluate(src, tt, l) 

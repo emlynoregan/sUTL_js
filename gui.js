@@ -13,6 +13,8 @@ var edSource = setupEditor("edSource");
 var edTransform = setupEditor("edTransform");
 var edResult = setupEditor("edResult");
 
+var distributions = []
+
 var EditorIsInvalid = function(aEditor)
 {
     var retval = null;
@@ -35,58 +37,6 @@ var ValidateJson = function(aEditor, aMessageSelector)
     $(aMessageSelector).text(EditorIsInvalid(aEditor));
 }
 
-var UpdateActions = function()
-{
-
-}
-
-var distribution = [
-  {
-    "name": "fred_l_emlynoregan_com",
-    "language": "sUTL0",
-    "transform-t": "fred!!!"
-  },
-  {
-    "name": "fredlist_l_emlynoregan_com",
-    "language": "sUTL0",
-    "transform-t": [ "#*.fred_l", "#*.fred_l" ],
-    "requires": ["fred_l"]
-  },
-  {
-    "name": "map_l_emlynoregan_com",
-    "language": "sUTL0",
-    "transform-t": 
-    {
-      "&": "if",
-      "cond": "#@.list",
-      "true": {
-        "'": [
-          "&&",
-          {
-            "!": "#@.t",
-            "item": {
-              "!": "#$.head",
-              "in": "#@.list"
-            }
-          },
-          {
-            "!": "#*.map_l_emlynoregan_com",
-            "list": {
-              "!": "#$.tail",
-              "in": "#@.list"
-            },
-            "t": "#@.t"
-          }
-        ]
-      },
-      "false": {
-        "'": []
-      }
-    },
-    "requires": ["map_l_emlynoregan_com"]
-  }
-]
-
 var UpdateResult = function()
 {
     if (!(EditorIsInvalid(edSource) || EditorIsInvalid(edTransform)))
@@ -100,7 +50,7 @@ var UpdateResult = function()
 
             var ltransform = "transform-t" in ltransformJson ? ltransformJson["transform-t"] : null;
 
-            var clresult = sUTL.compilelib([ltransformJson], [distribution], true)
+            var clresult = sUTL.compilelib([ltransformJson], distributions, true)
 
             if ("fail" in clresult)
             {
@@ -125,14 +75,12 @@ var UpdateResult = function()
 edSource.getSession().on('change', function(e) {
     ValidateJson(edSource, "#sourcemsg");
     setStoredText("sourceTextsUTL2", edSource.getValue())
-    UpdateActions();
     UpdateResult();
 });
 
 edTransform.getSession().on('change', function(e) {
     ValidateJson(edTransform, "#transformmsg");
     setStoredText("transformTextsUTL2", edTransform.getValue())
-    UpdateActions();
     UpdateResult();
 });
 
@@ -237,8 +185,10 @@ var _defaultTransform =
   "requires": ["map_l"]
 }
 
-edSource.setValue(getStoredText("sourceTextsUTL2",  JSON.stringify(_defaultSource, null, 2)))
-edSource.gotoLine(0);
-edTransform.setValue(getStoredText("transformTextsUTL2", JSON.stringify(_defaultTransform, null, 2)))
-edTransform.gotoLine(0);
+$(document).ready(function(){
+  edSource.setValue(getStoredText("sourceTextsUTL2",  JSON.stringify(_defaultSource, null, 2)))
+  edSource.gotoLine(0);
+  edTransform.setValue(getStoredText("transformTextsUTL2", JSON.stringify(_defaultTransform, null, 2)))
+  edTransform.gotoLine(0);
+});
 
