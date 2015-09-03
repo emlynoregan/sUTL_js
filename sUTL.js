@@ -132,6 +132,63 @@
                 }
 
                 return retval
+            },
+            "keys": function(parentscope, scope, l, src, tt, b)
+            {
+                var obj = get(scope, "map", null)
+                if (isObject(obj))
+                    return Object.keys(obj)
+                else
+                    return null
+            },
+            "values": function(parentscope, scope, l, src, tt, b)
+            {
+                var obj = get(scope, "map", null)
+                if (isObject(obj))
+                {
+                    var vals = Object.keys(obj).map(function (key) {
+                        return obj[key];
+                    });
+                    return vals;
+                }
+                else
+                    return null
+            },
+            "type": function(parentscope, scope, l, src, tt, b)
+            {
+                var item = get(scope, "value", null)
+                if (isObject(item))
+                    return "map"
+                else if (isArray(item))
+                    return "list"
+                else if (isString(item))
+                    return "string"
+                else if (isNumber(item))
+                    return "number"
+                else if (isBool(item))
+                    return "boolean"
+                else if (item = null)
+                    return "null"
+                else
+                    return "unknown"
+            },
+            "makemap":function(parentscope, scope, l, src, tt, b)
+            {
+                retval = {}
+                var item = get(scope, "value", null)
+                if (isArray(item))
+                {
+                    for (var ix in item)
+                    {
+                        var entry = item[ix];
+                        if (isArray(entry) && entry.length >= 2 && isString(entry[0]))
+                        {
+                            retval[entry[0]] = entry[1]
+                        }
+                    } 
+
+                }
+                return retval
             }
         }
 
@@ -315,6 +372,14 @@
 
     function isString(obj) {
         return (typeof obj === 'string' || obj instanceof String);
+    }
+
+    function isNumber(obj) {
+        return typeof obj === 'number';
+    }
+
+    function isBool(obj) {
+        return typeof obj === 'boolean';
     }
 
     function isPathHeadTransform(obj) {
