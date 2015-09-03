@@ -110,6 +110,18 @@
             {
                 return get(scope, "a", 0) < get(scope, "b", 0)
             },
+            "&&": function(parentscope, scope, l, src, tt, b)
+            {
+                return get(scope, "a", false) && get(scope, "b", false)
+            },
+            "||": function(parentscope, scope, l, src, tt, b)
+            {
+                return get(scope, "a", false) || get(scope, "b", false)
+            },
+            "!": function(parentscope, scope, l, src, tt, b)
+            {
+                return ! get(scope, "a", false)
+            },
             "if": function(parentscope, scope, l, src, tt, b)
             {
                 var retval = null;
