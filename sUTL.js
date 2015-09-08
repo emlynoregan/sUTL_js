@@ -549,7 +549,7 @@
                 // evaluate the test. If truthy, the test fails
                 var fail = evaluate(get(decl, "transform-t", null), get(decl, "test-t", null), decllib)
                 if (fail)
-                    fails.push(fail)
+                    fails = fails.concat(fail)
             }
         } 
 
