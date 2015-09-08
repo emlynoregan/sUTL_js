@@ -121,9 +121,26 @@ var _defaultTransform =
 }
 
 $(document).ready(function(){
-  edSource.setValue(getStoredText("sourceTextsUTL2",  JSON.stringify(_defaultSource, null, 2)))
-  edSource.gotoLine(0);
-  edTransform.setValue(getStoredText("transformTextsUTL2", JSON.stringify(_defaultTransform, null, 2)))
-  edTransform.gotoLine(0);
+   xdloader.create('http://emlynoregan.github.io/sUTL-spec/xdremote.html')
+
+  .then(function(remote) {
+
+      //got remote    
+      //use it to get a file, and parse it as a JSON file 
+
+      return remote.get('sUTL_core.json', true)
+      .then(function(response) {
+        distributions.push(response.data)
+        console.log(response.data.message);
+
+        edSource.setValue(getStoredText("sourceTextsUTL2",  JSON.stringify(_defaultSource, null, 2)))
+        edSource.gotoLine(0);
+        edTransform.setValue(getStoredText("transformTextsUTL2", JSON.stringify(_defaultTransform, null, 2)))
+        edTransform.gotoLine(0);
+      })
+      .catch(function(error){
+        console.log('ERROR: ' + error);
+      })
+  }).destroy();
 });
 
