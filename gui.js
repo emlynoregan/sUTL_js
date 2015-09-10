@@ -128,19 +128,34 @@ $(document).ready(function(){
       //got remote    
       //use it to get a file, and parse it as a JSON file 
 
-      return remote.get('sUTL_core.json', true)
-      .then(function(response) {
-        distributions.push(response.data)
-        console.log(response.data.message);
+      remote.get('sUTL_core.json', true)
+      .then(function(coreresponse) {
+        try{
+          remote.get('sUTL_coretests.json', true)
+          .then(function(coretestsresponse) {
+            console.log(coreresponse.data.message);
+            console.log(coretestsresponse.data.message);
 
-        edSource.setValue(getStoredText("sourceTextsUTL2",  JSON.stringify(_defaultSource, null, 2)))
-        edSource.gotoLine(0);
-        edTransform.setValue(getStoredText("transformTextsUTL2", JSON.stringify(_defaultTransform, null, 2)))
-        edTransform.gotoLine(0);
+            distributions.push(coreresponse.data)
+            distributions.push(coretestsresponse.data)
+
+            edSource.setValue(getStoredText("sourceTextsUTL2",  JSON.stringify(_defaultSource, null, 2)))
+            edSource.gotoLine(0);
+            edTransform.setValue(getStoredText("transformTextsUTL2", JSON.stringify(_defaultTransform, null, 2)))
+            edTransform.gotoLine(0);
+          })
+        }
+        catch(error)
+        {
+          console.log('ERROR: ' + error);
+        }
       })
       .catch(function(error){
         console.log('ERROR: ' + error);
       })
-  }).destroy();
+  })
+  .catch(function(error){
+    console.log('ERROR: ' + error);
+  })
 });
 

@@ -29,6 +29,24 @@
             return def
     }
 
+    function gettype(item)
+    {
+        if (isObject(item))
+            return "map"
+        else if (isArray(item))
+            return "list"
+        else if (isString(item))
+            return "string"
+        else if (isNumber(item))
+            return "number"
+        else if (isBool(item))
+            return "boolean"
+        else if (item = null)
+            return "null"
+        else
+            return "unknown"
+    }
+
     function builtins()
     {
         var retval = {
@@ -72,7 +90,12 @@
             },
             "+": function(parentscope, scope, l, src, tt, b)
             {
-                return get(scope, "a", 0) + get(scope, "b", 0)
+                var a = get(scope, "a", 0)
+                var b = get(scope, "b", 0)
+                if (gettype(a) == gettype(b))
+                    return a + b
+                else
+                    return null
             },
             "-": function(parentscope, scope, l, src, tt, b)
             {
@@ -88,11 +111,11 @@
             },
             "=": function(parentscope, scope, l, src, tt, b)
             {
-                return get(scope, "a", 0) == get(scope, "b", 0)
+                return get(scope, "a", 0) === get(scope, "b", 0)
             },
             "!=": function(parentscope, scope, l, src, tt, b)
             {
-                return get(scope, "a", 0) != get(scope, "b", 0)
+                return get(scope, "a", 0) !== get(scope, "b", 0)
             },
             ">=": function(parentscope, scope, l, src, tt, b)
             {
@@ -169,20 +192,7 @@
             "type": function(parentscope, scope, l, src, tt, b)
             {
                 var item = get(scope, "value", null)
-                if (isObject(item))
-                    return "map"
-                else if (isArray(item))
-                    return "list"
-                else if (isString(item))
-                    return "string"
-                else if (isNumber(item))
-                    return "number"
-                else if (isBool(item))
-                    return "boolean"
-                else if (item = null)
-                    return "null"
-                else
-                    return "unknown"
+                return gettype(item)
             },
             "makemap":function(parentscope, scope, l, src, tt, b)
             {
@@ -232,7 +242,7 @@
         }
         else if (isQuoteEval(t))
         {
-            return t["'"]
+            return _quoteEvaluate(s, t["'"], l, src, tt, b)
         }
         else if (isDictTransform(t))
         {
@@ -252,6 +262,26 @@
         else if (isPathHeadTransform(t))
         {
             return _evaluatePathHead(s, t.slice(1), l, src, tt, b)
+        }
+        else
+        {
+            return t; // simple transform
+        }
+    }
+
+    function _quoteEvaluate(s, t, l, src, tt, b)
+    {
+        if (isDoubleQuoteEval(t))
+        {
+            return _evaluate(s, t["''"], l, src, tt, b)
+        }
+        else if (isDictTransform(t))
+        {
+            return _quoteEvaluateDict(s, t, l, src, tt, b)
+        }
+        else if (isListTransform(t))
+        {
+            return _quoteEvaluateList(s, t, l, src, tt, b)
         }
         else
         {
@@ -307,12 +337,32 @@
         return retval
     }
 
+    function _quoteEvaluateDict(s, t, l, src, tt, b)
+    {
+        var retval = {}
+        for (var key in t)
+        {
+            retval[key] = _quoteEvaluate(s, t[key], l, src, tt, b);
+        }
+        return retval
+    }
+
     function _evaluateList(s, t, l, src, tt, b)
     {
         var retval = []
         for (var ix in t)
         {
             retval.push(_evaluate(s, t[ix], l, src, tt, b))
+        }
+        return retval
+    }
+
+    function _quoteEvaluateList(s, t, l, src, tt, b)
+    {
+        var retval = []
+        for (var ix in t)
+        {
+            retval.push(_quoteEvaluate(s, t[ix], l, src, tt, b))
         }
         return retval
     }
@@ -364,6 +414,10 @@
 
     function isQuoteEval(obj) {
         return isObject(obj) && "'" in obj;
+    }
+
+    function isDoubleQuoteEval(obj) {
+        return isObject(obj) && "''" in obj;
     }
 
     function isDictTransform(obj) {
