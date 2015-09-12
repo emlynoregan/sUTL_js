@@ -52,7 +52,11 @@ var UpdateResult = function()
 
             var clresult = sUTL.compilelib([ltransformJson], distributions, true)
 
-            if ("fail" in clresult)
+            if (!clresult)
+            {
+              lresult = "** Can't load libs **"
+            }
+            else if ("fail" in clresult)
             {
               lresult = clresult["fail"]
             }
@@ -66,6 +70,7 @@ var UpdateResult = function()
         }
         catch (e)
         {
+            console.log(e)
             edResult.setValue("Exception: " + e.message)
             edResult.gotoLine(0);
         }

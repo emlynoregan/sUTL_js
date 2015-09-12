@@ -54,6 +54,10 @@
             {
                 var fullpath = get(scope, "path", "")
 
+                if (!fullpath)
+                {
+                    console.log("here")
+                }
                 var prefix = fullpath.slice(0, 1)
                 var path = fullpath.slice(1)
                 var childscope = null;
@@ -244,6 +248,10 @@
         {
             return _quoteEvaluate(s, t["'"], l, src, tt, b)
         }
+        else if (isColonEval(t))
+        {
+            return t[":"]
+        }
         else if (isDictTransform(t))
         {
             return _evaluateDict(s, t, l, src, tt, b)
@@ -418,6 +426,10 @@
 
     function isDoubleQuoteEval(obj) {
         return isObject(obj) && "''" in obj;
+    }
+
+    function isColonEval(obj) {
+        return isObject(obj) && ":" in obj;
     }
 
     function isDictTransform(obj) {
