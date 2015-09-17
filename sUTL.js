@@ -193,6 +193,14 @@
                 else
                     return null
             },
+            "len": function(parentscope, scope, l, src, tt, b)
+            {
+                var item = get(scope, "list", null)
+                if (gettype(item) == "list")
+                    return item.length
+                else
+                    return 0
+            },
             "type": function(parentscope, scope, l, src, tt, b)
             {
                 var item = get(scope, "value", null)
