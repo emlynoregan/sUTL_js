@@ -62,7 +62,7 @@ var UpdateResult = function()
             }
             else
             {
-              lresult = sUTL.evaluate(lsourceJson, ltransform, clresult["lib"] || {})
+              lresult = sUTL.evaluate(lsourceJson, ltransform, clresult["lib"] || {}, 0)
             }
 
             edResult.setValue(JSON.stringify(lresult, null, space=2))
@@ -111,7 +111,7 @@ var setStoredText = function(aKey, aValue)
 
 var _defaultSource = [1, 2, 3, 4]
 
-var _defaultTransform = 
+var _xdefaultTransform = 
 {
   "language": "sUTL0",
   "transform-t": {
@@ -120,6 +120,15 @@ var _defaultTransform =
       "list": "#$"
     }
   },
+  "requires": [
+    "sum_core"
+  ]
+}
+
+var _defaultTransform = 
+{
+  "language": "sUTL0",
+  "transform-t": null,
   "requires": [
     "sum_core"
   ]
