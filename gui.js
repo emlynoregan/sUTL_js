@@ -52,13 +52,17 @@ var UpdateResult = function()
 
             var clresult = sUTL.compilelib([ltransformJson], distributions, true)
 
-            if ("fail" in clresult)
+            if (!clresult)
+            {
+              lresult = "** Can't load libs **"
+            }
+            else if ("fail" in clresult)
             {
               lresult = clresult["fail"]
             }
             else
             {
-              lresult = sUTL.evaluate(lsourceJson, ltransform, clresult["lib"] || {})
+              lresult = sUTL.evaluate(lsourceJson, ltransform, clresult["lib"] || {}, 0)
             }
 
             edResult.setValue(JSON.stringify(lresult, null, space=2))
@@ -66,6 +70,7 @@ var UpdateResult = function()
         }
         catch (e)
         {
+            console.log(e)
             edResult.setValue("Exception: " + e.message)
             edResult.gotoLine(0);
         }
@@ -106,7 +111,7 @@ var setStoredText = function(aKey, aValue)
 
 var _defaultSource = [1, 2, 3, 4]
 
-var _defaultTransform = 
+var _xdefaultTransform = 
 {
   "language": "sUTL0",
   "transform-t": {
@@ -120,6 +125,15 @@ var _defaultTransform =
   ]
 }
 
+var _defaultTransform = 
+{
+  "language": "sUTL0",
+  "transform-t": null,
+  "requires": [
+    "sum_core"
+  ]
+}
+
 $(document).ready(function(){
    xdloader.create('http://emlynoregan.github.io/sUTL-spec/xdremote.html')
 
@@ -128,19 +142,34 @@ $(document).ready(function(){
       //got remote    
       //use it to get a file, and parse it as a JSON file 
 
-      return remote.get('sUTL_core.json', true)
-      .then(function(response) {
-        distributions.push(response.data)
-        console.log(response.data.message);
+      remote.get('sUTL_core.json', true)
+      .then(function(coreresponse) {
+        try{
+          remote.get('sUTL_coretests.json', true)
+          .then(function(coretestsresponse) {
+            console.log(coreresponse.data.message);
+            console.log(coretestsresponse.data.message);
 
-        edSource.setValue(getStoredText("sourceTextsUTL2",  JSON.stringify(_defaultSource, null, 2)))
-        edSource.gotoLine(0);
-        edTransform.setValue(getStoredText("transformTextsUTL2", JSON.stringify(_defaultTransform, null, 2)))
-        edTransform.gotoLine(0);
+            distributions.push(coreresponse.data)
+            distributions.push(coretestsresponse.data)
+
+            edSource.setValue(getStoredText("sourceTextsUTL2",  JSON.stringify(_defaultSource, null, 2)))
+            edSource.gotoLine(0);
+            edTransform.setValue(getStoredText("transformTextsUTL2", JSON.stringify(_defaultTransform, null, 2)))
+            edTransform.gotoLine(0);
+          })
+        }
+        catch(error)
+        {
+          console.log('ERROR: ' + error);
+        }
       })
       .catch(function(error){
         console.log('ERROR: ' + error);
       })
-  }).destroy();
+  })
+  .catch(function(error){
+    console.log('ERROR: ' + error);
+  })
 });
 

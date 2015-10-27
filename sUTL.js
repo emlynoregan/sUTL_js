@@ -29,13 +29,35 @@
             return def
     }
 
+    function gettype(item)
+    {
+        if (isObject(item))
+            return "map"
+        else if (isArray(item))
+            return "list"
+        else if (isString(item))
+            return "string"
+        else if (isNumber(item))
+            return "number"
+        else if (isBool(item))
+            return "boolean"
+        else if (item = null)
+            return "null"
+        else
+            return "unknown"
+    }
+
     function builtins()
     {
         var retval = {
-            "path": function(parentscope, scope, l, src, tt, b)
+            "path": function(parentscope, scope, l, src, tt, b, h)
             {
                 var fullpath = get(scope, "path", "")
 
+                if (!fullpath)
+                {
+                    console.log("here")
+                }
                 var prefix = fullpath.slice(0, 1)
                 var path = fullpath.slice(1)
                 var childscope = null;
@@ -70,82 +92,87 @@
                     return [];
                 }
             },
-            "+": function(parentscope, scope, l, src, tt, b)
+            "+": function(parentscope, scope, l, src, tt, b, h)
             {
-                return get(scope, "a", 0) + get(scope, "b", 0)
+                var a = get(scope, "a", 0)
+                var b = get(scope, "b", 0)
+                if (gettype(a) == gettype(b))
+                    return a + b
+                else
+                    return null
             },
-            "-": function(parentscope, scope, l, src, tt, b)
+            "-": function(parentscope, scope, l, src, tt, b, h)
             {
                 return get(scope, "a", 0) - get(scope, "b", 0)
             },
-            "*": function(parentscope, scope, l, src, tt, b)
+            "*": function(parentscope, scope, l, src, tt, b, h)
             {
-                return get(scope, "a", 1) * get(scope, "b", 1)
+                return get(scope, "a", 1) * get(scope, "b", 1, h)
             },
             "/": function(parentscope, scope, l, src, tt, b)
             {
-                return get(scope, "a", 1) / get(scope, "b", 1)
+                return get(scope, "a", 1) / get(scope, "b", 1, h)
             },
-            "=": function(parentscope, scope, l, src, tt, b)
+            "=": function(parentscope, scope, l, src, tt, b, h)
             {
-                return get(scope, "a", 0) == get(scope, "b", 0)
+                return get(scope, "a", 0) === get(scope, "b", 0, h)
             },
-            "!=": function(parentscope, scope, l, src, tt, b)
+            "!=": function(parentscope, scope, l, src, tt, b, h)
             {
-                return get(scope, "a", 0) != get(scope, "b", 0)
+                return get(scope, "a", 0) !== get(scope, "b", 0)
             },
-            ">=": function(parentscope, scope, l, src, tt, b)
+            ">=": function(parentscope, scope, l, src, tt, b, h)
             {
                 return get(scope, "a", 0) >= get(scope, "b", 0)
             },
-            "<=": function(parentscope, scope, l, src, tt, b)
+            "<=": function(parentscope, scope, l, src, tt, b, h)
             {
                 return get(scope, "a", 0) <= get(scope, "b", 0)
             },
-            ">": function(parentscope, scope, l, src, tt, b)
+            ">": function(parentscope, scope, l, src, tt, b, h)
             {
                 return get(scope, "a", 0) > get(scope, "b", 0)
             },
-            "<": function(parentscope, scope, l, src, tt, b)
+            "<": function(parentscope, scope, l, src, tt, b, h)
             {
                 return get(scope, "a", 0) < get(scope, "b", 0)
             },
-            "&&": function(parentscope, scope, l, src, tt, b)
+            "&&": function(parentscope, scope, l, src, tt, b, h)
             {
                 return get(scope, "a", false) && get(scope, "b", false)
             },
-            "||": function(parentscope, scope, l, src, tt, b)
+            "||": function(parentscope, scope, l, src, tt, b, h)
             {
                 return get(scope, "a", false) || get(scope, "b", false)
             },
-            "!": function(parentscope, scope, l, src, tt, b)
+            "!": function(parentscope, scope, l, src, tt, b, h)
             {
                 return ! get(scope, "a", false)
             },
-            "if": function(parentscope, scope, l, src, tt, b)
+            "if": function(parentscope, scope, l, src, tt, b, h)
             {
                 var retval = null;
                 var condvalue = false;
 
                 if ("cond" in scope)
-                    condvalue = _evaluate(parentscope, scope["cond"], l, src, tt, b)
+                    condvalue = _evaluate(parentscope, scope["cond"], l, src, tt, b, h)
                     if (isArray(condvalue) && condvalue.length == 0)
                         condvalue = false
 
                 if (condvalue)
                 {
                     if ("true" in scope)
-                        retval = _evaluate(parentscope, scope["true"], l, src, tt, b)
+                        retval = _evaluate(parentscope, scope["true"], l, src, tt, b, h)
                 }
                 else
                 {
                     if ("false" in scope)
-                        retval = _evaluate(parentscope, scope["false"], l, src, tt, b)
+                        retval = _evaluate(parentscope, scope["false"], l, src, tt, b, h)
                 }
 
                 return retval
             },
-            "keys": function(parentscope, scope, l, src, tt, b)
+            "keys": function(parentscope, scope, l, src, tt, b, h)
             {
                 var obj = get(scope, "map", null)
                 if (isObject(obj))
@@ -153,7 +180,7 @@
                 else
                     return null
             },
-            "values": function(parentscope, scope, l, src, tt, b)
+            "values": function(parentscope, scope, l, src, tt, b, h)
             {
                 var obj = get(scope, "map", null)
                 if (isObject(obj))
@@ -166,25 +193,20 @@
                 else
                     return null
             },
-            "type": function(parentscope, scope, l, src, tt, b)
+            "len": function(parentscope, scope, l, src, tt, b, h)
+            {
+                var item = get(scope, "list", null)
+                if (gettype(item) == "list")
+                    return item.length
+                else
+                    return 0
+            },
+            "type": function(parentscope, scope, l, src, tt, b, h)
             {
                 var item = get(scope, "value", null)
-                if (isObject(item))
-                    return "map"
-                else if (isArray(item))
-                    return "list"
-                else if (isString(item))
-                    return "string"
-                else if (isNumber(item))
-                    return "number"
-                else if (isBool(item))
-                    return "boolean"
-                else if (item = null)
-                    return "null"
-                else
-                    return "unknown"
+                return gettype(item)
             },
-            "makemap":function(parentscope, scope, l, src, tt, b)
+            "makemap":function(parentscope, scope, l, src, tt, b, h)
             {
                 retval = {}
                 var item = get(scope, "value", null)
@@ -201,6 +223,32 @@
 
                 }
                 return retval
+            },
+            "reduce": function(parentscope, scope, l, src, tt, b, h)
+            {
+                retval = {}
+                var list = get(scope, "list", null)
+                var t = get(scope, "t", null)
+                var accum = get(scope, "accum", null)
+
+                if (isArray(list))
+                {
+                    for (var ix in list)
+                    {
+                        var item = list[ix];
+
+                        accum = _evaluate(
+                            {
+                                item: item,
+                                accum: accum
+                            },
+                            t,
+                            l, src, tt, b, h
+                        )
+                    } 
+                }
+
+                return accum;
             }
         }
 
@@ -215,126 +263,326 @@
         return retval
     }
 
-    function evaluate(src, tt, l) 
+    var cost = 0;
+
+    function getcost()
     {
-        return _evaluate(src, tt, l, src, tt, builtins())
+        return cost;
     }
 
-    function _evaluate(s, t, l, src, tt, b)
+    function clearcost()
     {
-        if (isEval(t))
+        cost = 0;
+    }
+
+    function inccost()
+    {
+        cost ++;
+    }
+
+    function logenter(msg, s, t, h)
+    {
+        if (h > 0)
         {
-            return _evaluateEval(s, t, l, src, tt, b)
+            console.log("(" + h + "): " + msg)
+            console.log(" - s: " + JSON.stringify(s))
+            console.log(" - t: " + JSON.stringify(t))
         }
-        else if (isBuiltinEval(t))
+        inccost();
+    }
+
+    function logexit(msg, r, h)
+    {
+        if (h > 0)
         {
-            return _evaluateBuiltin(s, t, l, src, tt, b)
+            console.log("(" + h + "): " + msg)
+            console.log(" - r: " + JSON.stringify(r))
         }
-        else if (isQuoteEval(t))
+    }
+
+    function evaluate(src, tt, l, h) 
+    {
+        clearcost();
+        var retval = _evaluate(src, tt, l, src, tt, builtins(), h)
+        console.log("Cost: " + getcost())
+        return retval;
+    }
+
+    function dec(x)
+    {
+        return x-1
+    }
+
+    function _evaluate(s, t, l, src, tt, b, h)
+    {
+        if (!h) h = 0;
+
+        var r;
+
+        var done = false;
+        var s1 = s;
+        var t1 = t;
+        var l1 = l;
+        var counter = 0;
+
+        while (!done)
         {
-            return t["'"]
+            logenter("_evaluate: " + counter, s1, t1, h)
+
+            if (isEval(t1))
+            {
+                r = _evaluateEval(s1, t1, l1, src, tt, b, dec(h));
+                done = true;
+
+                //var res = _evaluateEvalTCO(s1, t1, l1, src, tt, b, dec(h));
+                //s1 = res.s;
+                //t1 = res.t;
+                //l1 = res.l;
+            }
+            else if (isBuiltinEval(t1))
+            {
+                r = _evaluateBuiltin(s1, t1, l1, src, tt, b, dec(h))
+                done = true;
+            }
+            else if (isQuoteEval(t1))
+            {
+                r = _quoteEvaluate(s1, t1["'"], l1, src, tt, b, dec(h))
+                done = true;
+            }
+            else if (isColonEval(t1))
+            {
+                r = t1[":"]
+                done = true;
+            }
+            else if (isDictTransform(t1))
+            {
+                r = _evaluateDict(s1, t1, l1, src, tt, b, dec(h))
+                done = true;
+            }
+            else if (isListTransform(t1))
+            {
+                if (t1.length > 0 && t1[0] == "&&")
+                    r = _flatten(_evaluateList(s1, t1.slice(1), l1, src, tt, b, dec(h)))
+                else
+                    r = _evaluateList(s1, t1, l1, src, tt, b, dec(h))
+                done = true;
+            }
+            else if (isPathTransform(t1))
+            {
+                r = _evaluatePath(s1, t1.slice(2), l1, src, tt, b, dec(h))
+                done = true;
+            }
+            else if (isPathHeadTransform(t1))
+            {
+                r = _evaluatePathHead(s1, t1.slice(1), l1, src, tt, b, dec(h))
+                done = true;
+            }
+            else
+            {
+                r = t1; // simple transform
+                done = true;
+            }
+
+            counter++;
+        }
+
+        logexit("_evaluate", r, h)
+        return r
+    }
+
+    function _quoteEvaluate(s, t, l, src, tt, b, h)
+    {
+        logenter("_quoteEvaluate", s, t, h)
+        var r;
+
+        if (isDoubleQuoteEval(t))
+        {
+            r = _evaluate(s, t["''"], l, src, tt, b, dec(h))
         }
         else if (isDictTransform(t))
         {
-            return _evaluateDict(s, t, l, src, tt, b)
+            r = _quoteEvaluateDict(s, t, l, src, tt, b, dec(h))
         }
         else if (isListTransform(t))
         {
-            if (t.length > 0 && t[0] == "&&")
-                return _flatten(_evaluateList(s, t.slice(1), l, src, tt, b))
-            else
-                return _evaluateList(s, t, l, src, tt, b)
-        }
-        else if (isPathTransform(t))
-        {
-            return _evaluatePath(s, t.slice(2), l, src, tt, b)
-        }
-        else if (isPathHeadTransform(t))
-        {
-            return _evaluatePathHead(s, t.slice(1), l, src, tt, b)
+            r = _quoteEvaluateList(s, t, l, src, tt, b, dec(h))
         }
         else
         {
-            return t; // simple transform
+            r = t; // simple transform
         }
+
+        logexit("_quoteEvaluate", r, h)
+        return r
     }
     
-    function _evaluateBuiltin(s, t, l, src, tt, b)
+    function _evaluateBuiltin(s, t, l, src, tt, b, h)
     {
+        logenter("_evaluateBuiltin", s, t, h)
+
         var retval = null;
 
         var builtinf = get(b, t["&"], null);
 
         if (builtinf)
         {
-            var s2 = _evaluateDict(s, t, l, src, tt, b)
+            var s2 = _evaluateDict(s, t, l, src, tt, b, dec(h))
 
             var l2 = l;
             if ("*" in t)
             {
-                l2 = _evaluateDict(s, t["*"], l, src, tt, b)
+                l2 = _evaluateDict(s, t["*"], l, src, tt, b, dec(h))
             }
 
-            retval = builtinf(s, s2, l2, src, tt, b)
+            retval = builtinf(s, s2, l2, src, tt, b, dec(h))
         }
 
+        logexit("_evaluateBuiltin", retval, h)
         return retval
     }
 
-    function _evaluateEval(s, t, l, src, tt, b)
+    function _evaluateEval(s, t, l, src, tt, b, h)
     {
-        var t2 = _evaluate(s, t["!"], l, src, tt, b)
+        logenter("_evaluateEval", s, t, h)
 
-        var s2 = _evaluateDict(s, t, l, src, tt, b)
+        var retval;
+
+        var t2 = _evaluate(s, t["!"], l, src, tt, b, dec(h))
+
+        var s2 = _evaluateDict(s, t, l, src, tt, b, dec(h))
 
         var l2 = l;
         if ("*" in t)
         {
-            l2 = _evaluateDict(s, t["*"], l, src, tt, b)
+            l2 = _evaluateDict(s, t["*"], l, src, tt, b, dec(h))
         }
 
-        return _evaluate(s2, t2, l2, src, tt, b)
+//         retval = {s: s2, t: t2, l: l2}
+
+        retval = _evaluate(s2, t2, l2, src, tt, b, dec(h))
+
+        logexit("_evaluateEval", retval, h)
+        return retval
     }
 
-    function _evaluateDict(s, t, l, src, tt, b)
+    function _evaluateEvalTCO(s, t, l, src, tt, b, h)
     {
+        logenter("_evaluateEval", s, t, h)
+
+        var retval;
+
+        var t2 = _evaluate(s, t["!"], l, src, tt, b, dec(h))
+
+        var s2 = _evaluateDict(s, t, l, src, tt, b, dec(h))
+
+        var l2 = l;
+        if ("*" in t)
+        {
+            l2 = _evaluateDict(s, t["*"], l, src, tt, b, dec(h))
+        }
+
+        retval = {s: s2, t: t2, l: l2}
+
+        //retval = _evaluate(s2, t2, l2, src, tt, b, dec(h))
+
+        // logexit("_evaluateEval", retval, h)
+        return retval
+    }
+
+    function _evaluateDict(s, t, l, src, tt, b, h)
+    {
+        logenter("_evaluateDict", s, t, h)
+
         var retval = {}
         for (var key in t)
         {
             if ((key != "!") && (key != "&"))
-                retval[key] = _evaluate(s, t[key], l, src, tt, b);
+                retval[key] = _evaluate(s, t[key], l, src, tt, b, dec(h));
         }
+
+        logexit("_evaluateDict", retval, h)
         return retval
     }
 
-    function _evaluateList(s, t, l, src, tt, b)
+    function _quoteEvaluateDict(s, t, l, src, tt, b, h)
     {
+        logenter("_quoteEvaluateDict", s, t, h)
+
+        var retval = {}
+        for (var key in t)
+        {
+            retval[key] = _quoteEvaluate(s, t[key], l, src, tt, b, dec(h));
+        }
+
+        logexit("_quoteEvaluateDict", retval, h)
+        return retval
+    }
+
+    function _evaluateList(s, t, l, src, tt, b, h)
+    {
+        logenter("_evaluateList", s, t, h)
+
         var retval = []
         for (var ix in t)
         {
-            retval.push(_evaluate(s, t[ix], l, src, tt, b))
+            retval.push(_evaluate(s, t[ix], l, src, tt, b, dec(h)))
         }
+
+        logexit("_evaluateList", retval, h)
         return retval
     }
 
-    function _evaluatePathHead(s, t, l, src, tt, b)
+    function _quoteEvaluateList(s, t, l, src, tt, b, h)
     {
-        var resultlist = _evaluatePath(s, t, l, src, tt, b)
+        logenter("_quoteEvaluateList", s, t, h)
 
-        if (resultlist.length)
-            return resultlist[0]
-        else
-            return null;
+        var retval = []
+        for (var ix in t)
+        {
+            retval.push(_quoteEvaluate(s, t[ix], l, src, tt, b, dec(h)))
+        }
+
+        logexit("_quoteEvaluateList", retval, h)
+        return retval
     }
 
-    function _evaluatePath(s, t, l, src, tt, b)
+    function _evaluatePathHead(s, t, l, src, tt, b, h)
     {
+        logenter("_evaluatePathHead", s, t, h)
+
+        var retval;
+
         var path_t = {
             "&": "path",
             "path": t
         }
 
-        return _evaluate(s, path_t, l, src, tt, b)
+        var resultlist = _evaluateBuiltin(s, path_t, l, src, tt, b, dec(h))
+
+        if (resultlist.length)
+            retval = resultlist[0]
+        else
+            retval = null;
+
+        logexit("_evaluatePathHead", retval, h)
+        return retval
+    }
+
+    function _evaluatePath(s, t, l, src, tt, b, h)
+    {
+        logenter("_evaluatePath", s, t, h)
+
+        var retval;
+
+        var path_t = {
+            "&": "path",
+            "path": t
+        }
+
+        retval = _evaluateBuiltin(s, path_t, l, src, tt, b, dec(h))
+
+        logexit("_evaluatePath", retval, h)
+        return retval
     }
 
     function _flatten(lst)
@@ -364,6 +612,14 @@
 
     function isQuoteEval(obj) {
         return isObject(obj) && "'" in obj;
+    }
+
+    function isDoubleQuoteEval(obj) {
+        return isObject(obj) && "''" in obj;
+    }
+
+    function isColonEval(obj) {
+        return isObject(obj) && ":" in obj;
     }
 
     function isDictTransform(obj) {
