@@ -23,7 +23,7 @@
 
     function get(obj, key, def)
     {
-        if (key in obj)
+        if (key in obj && obj[key] != null)
             return obj[key]
         else
             return def
@@ -45,6 +45,88 @@
             return "null"
         else
             return "unknown"
+    }
+
+    function _processPath(startfrom, parentscope, scope, l, src, tt, b, h)
+    {    
+        var la = get(scope, "a", null)
+        var lb = get(scope, "b", null)
+        var lnotfirst = get(scope, "notfirst", false)
+
+        if (lnotfirst)
+        {
+            return _doPath(la, lb)
+        }
+        else
+        {
+            // first one. Both a and b are path components.
+            var laccum = _doPath([startfrom], la)
+            return _doPath(laccum, lb)
+        }
+    }
+
+    function _doPath(a, b)
+    {
+        var retval = [];
+
+        if (isArray(a))
+        {
+            if (b != null && b !== "")
+            {
+                for (var ix in a)
+                {
+                    var aItem = a[ix]; 
+                    try
+                    {
+                        if (b == "**") 
+                        {
+                            retval.push(aItem)
+                            var lstack = [aItem];
+                            while (lstack.length > 0)
+                            {
+                                var litem = lstack.pop()
+                                if (isObject(litem) || isArray(litem))
+                                {
+                                    for (var key in litem)
+                                    {
+                                        retval.push(litem[key])
+                                        lstack.push(litem[key])
+                                    }
+                                }
+                            }
+                        }
+                        else if (b == "*")
+                        {
+                            if (isObject(aItem) || isArray(aItem))
+                            {
+                                for (var key in aItem)
+                                {
+                                    retval.push(aItem[key])
+                                }
+                            }
+                        }
+                        else if (isObject(aItem) && isString(b))
+                        {
+                            if (b in aItem)
+                                retval.push(aItem[b]);
+                        }
+                        else if (isArray(aItem) && isNumber(b))
+                        {
+                            if (b in aItem)
+                                retval.push(aItem[b]);
+                        }
+                    }
+                    catch (ex)
+                    {
+                        console.log(ex)
+                    }
+                }
+            }
+            else
+                retval = a;
+        }
+
+        return retval
     }
 
     function builtins()
@@ -109,7 +191,7 @@
             {
                 return get(scope, "a", 1) * get(scope, "b", 1, h)
             },
-            "/": function(parentscope, scope, l, src, tt, b)
+            "/": function(parentscope, scope, l, src, tt, b, h)
             {
                 return get(scope, "a", 1) / get(scope, "b", 1, h)
             },
@@ -139,7 +221,13 @@
             },
             "&&": function(parentscope, scope, l, src, tt, b, h)
             {
-                return get(scope, "a", false) && get(scope, "b", false)
+                if ("a" in scope)
+                    if ("b" in scope)
+                        return get(scope, "a", false) && get(scope, "b", false)
+                    else
+                        return get(scope, "a", false)
+                else
+                    get(scope, "b", false)
             },
             "||": function(parentscope, scope, l, src, tt, b, h)
             {
@@ -147,7 +235,7 @@
             },
             "!": function(parentscope, scope, l, src, tt, b, h)
             {
-                return ! get(scope, "a", false)
+                return ! get(scope, "b", false)
             },
             "if": function(parentscope, scope, l, src, tt, b, h)
             {
@@ -237,11 +325,24 @@
                     {
                         var item = list[ix];
 
+                        var s2 = {};
+
+                        for (var key in parentscope)
+                        {
+                            s2[key] = parentscope[key];
+                        }
+
+                        for (var key in scope)
+                        {
+                            s2[key] = scope[key];
+                        }
+
+                        s2["item"] = item;
+                        s2["accum"] = accum;
+                        s2["ix"] = parseInt(ix);
+
                         accum = _evaluate(
-                            {
-                                item: item,
-                                accum: accum
-                            },
+                            s2,
                             t,
                             l, src, tt, b, h
                         )
@@ -249,6 +350,67 @@
                 }
 
                 return accum;
+            },
+            "$": function(parentscope, scope, l, src, tt, b, h)
+            {
+                return _processPath(src, parentscope, scope, l, src, tt, b, h)
+            },
+            "@": function(parentscope, scope, l, src, tt, b, h)
+            {
+                return _processPath(parentscope, parentscope, scope, l, src, tt, b, h)
+            },
+            "^": function(parentscope, scope, l, src, tt, b, h)
+            {
+                return _processPath(scope, parentscope, scope, l, src, tt, b, h)
+            },
+            "*": function(parentscope, scope, l, src, tt, b, h)
+            {
+                return _processPath(l, parentscope, scope, l, src, tt, b, h)
+            },
+            "~": function(parentscope, scope, l, src, tt, b, h)
+            {
+                return _processPath(tt, parentscope, scope, l, src, tt, b, h)
+            },
+            "%": function(parentscope, scope, l, src, tt, b, h)
+            {
+                var la = get(scope, "a", null)
+                var lb = get(scope, "b", null)
+                var lnotfirst = get(scope, "notfirst", false)
+
+                if (lnotfirst)
+                {
+                    return _doPath(la, lb)
+                }
+                else
+                {
+                    if (la == null)
+                        return _doPath([lb], null)
+                    else
+                        return _doPath([la], lb)
+                }
+            },
+            "head": function(parentscope, scope, l, src, tt, b, h)
+            {
+                var lb = get(scope, "b", null)
+
+                if (isArray(lb) && lb.length)
+                    return lb[0]
+                else
+                    return null;
+            },
+            "tail": function(parentscope, scope, l, src, tt, b, h)
+            {
+                var lb = get(scope, "b", null)
+
+                if (isArray(lb))
+                {
+                    if (lb.length)
+                        return lb.slice(1)
+                    else
+                        return []
+                }
+                else
+                    return null;
             }
         }
 
@@ -359,12 +521,22 @@
                 r = _evaluateDict(s1, t1, l1, src, tt, b, dec(h))
                 done = true;
             }
+            else if (isArrayBuiltinEval(t1, b))
+            {
+                r = _evaluateArrayBuiltin(s1, t1, l1, src, tt, b, dec(h))
+                done = true;
+            }
             else if (isListTransform(t1))
             {
                 if (t1.length > 0 && t1[0] == "&&")
                     r = _flatten(_evaluateList(s1, t1.slice(1), l1, src, tt, b, dec(h)))
                 else
                     r = _evaluateList(s1, t1, l1, src, tt, b, dec(h))
+                done = true;
+            }
+            else if (isStringBuiltinEval(t1, b))
+            {
+                r = _evaluateStringBuiltin(s1, t1, l1, src, tt, b, dec(h))
                 done = true;
             }
             else if (isPathTransform(t1))
@@ -415,6 +587,51 @@
         logexit("_quoteEvaluate", r, h)
         return r
     }
+
+    function _getArrayBuiltinName(aOp)
+    {
+        if (aOp.length) 
+            return aOp.slice(1);
+        else
+            return null;
+    }
+
+    function _evaluateStringBuiltin(s, t, l, src, tt, b, h)
+    {
+        var larr = t.split(".");
+
+        var larr2 = []
+
+        for (var lix in larr)
+        {
+            var litem = larr[lix]
+            var i = parseInt(litem)
+            if (isNaN(i))
+                larr2.push(litem)
+            else
+                larr2.push(i)
+        }
+
+        return _evaluateArrayBuiltin(s, larr2, l, src, tt, b, h)
+    }
+    
+    function _evaluateArrayBuiltin(s, t, l, src, tt, b, h)
+    {
+        var lop = t.slice(0, 1)
+        if (lop.length)
+            lop = lop[0]
+
+        var lopChar = lop[0]
+
+        var uset = {
+            "&": _getArrayBuiltinName(lop),
+//            "args": t.slice(1), 
+            "args": _evaluateList(s, t.slice(1), l, src, tt, b, h),
+            "head": lopChar == "^"
+        }
+
+        return _evaluateBuiltin(s, uset, l, src, tt, b, dec(h))
+    }
     
     function _evaluateBuiltin(s, t, l, src, tt, b, h)
     {
@@ -426,15 +643,64 @@
 
         if (builtinf)
         {
-            var s2 = _evaluateDict(s, t, l, src, tt, b, dec(h))
+            var uset = t;
 
-            var l2 = l;
-            if ("*" in t)
+            if ("args" in t)
             {
-                l2 = _evaluateDict(s, t["*"], l, src, tt, b, dec(h))
-            }
+                // args format relies on reducing over the list
+                if (t["args"].length == 0)
+                {
+                    uset = {
+                        "&": t["&"]
+                    }
 
-            retval = builtinf(s, s2, l2, src, tt, b, dec(h))
+                    retval = _evaluateBuiltin(s, uset, l, src, tt, b, dec(h))
+                }
+                else if (t["args"].length == 1)
+                {
+                    uset = {
+                        "&": t["&"],
+                        "b": t["args"][0]
+                    }
+
+                    retval = _evaluateBuiltin(s, uset, l, src, tt, b, dec(h))
+                }
+                else
+                {
+                    // 2 or more items in the args list. Reduce over them
+                    var list = t["args"].slice(1)
+                    retval = t["args"][0]
+
+                    for (var ix in list)
+                    {
+                        var item = list[ix];
+
+                        uset = {
+                          "&": t["&"],
+                          "a": retval,
+                          "b": item,
+                          "notfirst": ix > 0
+                        }
+
+                        retval = _evaluateBuiltin(s, uset, l, src, tt, b, dec(h))
+                    } 
+                }
+
+                if (isArray(retval) && retval.length && t["head"])
+                    retval = retval[0] 
+            }
+            else
+            {
+                var s2 = _evaluateDict(s, t, l, src, tt, b, dec(h))
+
+                var l2 = l;
+                if ("*" in t)
+                {
+                    l2 = _evaluateDict(s, t["*"], l, src, tt, b, dec(h))
+                }
+
+                retval = builtinf(s, s2, l2, src, tt, b, dec(h))
+            }
         }
 
         logexit("_evaluateBuiltin", retval, h)
@@ -604,6 +870,37 @@
 
     function isBuiltinEval(obj) {
         return isObject(obj) && "&" in obj;
+    }
+
+    function isArrayBuiltinEval(arr, b) {
+        var retval = isArray(arr) && arr.length;
+
+        if (retval)
+        {
+            var lop = arr.slice(0, 1)
+            if (lop.length)
+                lop = lop[0]
+    
+            retval = 
+                isString(lop) &&
+                ((lop.slice(0, 1) == "&") || (lop.slice(0, 1) == "^")) &&
+                _getArrayBuiltinName(lop) in b;
+        }
+
+        return retval;
+    }
+
+    function isStringBuiltinEval(str, b) {
+        var retval = false;
+
+        if (isString(str))
+        {
+            var larr = str.split(".")
+
+            retval = isArrayBuiltinEval(larr, b)
+        }
+
+        return retval;
     }
 
     function isEval(obj) {

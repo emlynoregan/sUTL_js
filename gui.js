@@ -62,7 +62,7 @@ var UpdateResult = function()
             }
             else
             {
-              lresult = sUTL.evaluate(lsourceJson, ltransform, clresult["lib"] || {}, 0)
+              lresult = sUTL.evaluate(lsourceJson, ltransform, clresult["lib"] || {}, 0)//100)
             }
 
             edResult.setValue(JSON.stringify(lresult, null, space=2))
