@@ -132,48 +132,48 @@
     function builtins()
     {
         var retval = {
-            "path": function(parentscope, scope, l, src, tt, b, h)
-            {
-                var fullpath = get(scope, "path", "")
+//             "path": function(parentscope, scope, l, src, tt, b, h)
+//             {
+//                 var fullpath = get(scope, "path", "")
 
-                if (!fullpath)
-                {
-                    console.log("here")
-                }
-                var prefix = fullpath.slice(0, 1)
-                var path = fullpath.slice(1)
-                var childscope = null;
+//                 if (!fullpath)
+//                 {
+//                     console.log("here")
+//                 }
+//                 var prefix = fullpath.slice(0, 1)
+//                 var path = fullpath.slice(1)
+//                 var childscope = null;
 
-                if (prefix == '@')
-                {
-                    childscope = parentscope
-                }
-                else if (prefix == '^')
-                {
-                    childscope = scope // is this even a thing?
-                }
-                else if (prefix == '*')
-                {
-                    childscope = l
-                }
-                else if (prefix == '$')
-                {
-                    childscope = src
-                }
-                else if (prefix == '~')
-                {
-                    childscope = tt
-                }
+//                 if (prefix == '@')
+//                 {
+//                     childscope = parentscope
+//                 }
+//                 else if (prefix == '^')
+//                 {
+//                     childscope = scope // is this even a thing?
+//                 }
+//                 else if (prefix == '*')
+//                 {
+//                     childscope = l
+//                 }
+//                 else if (prefix == '$')
+//                 {
+//                     childscope = src
+//                 }
+//                 else if (prefix == '~')
+//                 {
+//                     childscope = tt
+//                 }
 
-                if (childscope)
-                {
-                    return jsonPath(childscope, "$" + path) || []
-                }
-                else
-                {
-                    return [];
-                }
-            },
+//                 if (childscope)
+//                 {
+//                     return jsonPath(childscope, "$" + path) || []
+//                 }
+//                 else
+//                 {
+//                     return [];
+//                 }
+//             },
             "+": function(parentscope, scope, l, src, tt, b, h)
             {
                 var a = get(scope, "a", 0)
@@ -539,16 +539,16 @@
                 r = _evaluateStringBuiltin(s1, t1, l1, src, tt, b, dec(h))
                 done = true;
             }
-            else if (isPathTransform(t1))
-            {
-                r = _evaluatePath(s1, t1.slice(2), l1, src, tt, b, dec(h))
-                done = true;
-            }
-            else if (isPathHeadTransform(t1))
-            {
-                r = _evaluatePathHead(s1, t1.slice(1), l1, src, tt, b, dec(h))
-                done = true;
-            }
+//             else if (isPathTransform(t1))
+//             {
+//                 r = _evaluatePath(s1, t1.slice(2), l1, src, tt, b, dec(h))
+//                 done = true;
+//             }
+//             else if (isPathHeadTransform(t1))
+//             {
+//                 r = _evaluatePathHead(s1, t1.slice(1), l1, src, tt, b, dec(h))
+//                 done = true;
+//             }
             else
             {
                 r = t1; // simple transform
@@ -715,7 +715,21 @@
 
         var t2 = _evaluate(s, t["!"], l, src, tt, b, dec(h))
 
-        var s2 = _evaluateDict(s, t, l, src, tt, b, dec(h))
+        var s2 = {};
+
+        for (var key in s)
+        {
+            s2[key] = s[key];
+        }
+
+        var sX = _evaluateDict(s, t, l, src, tt, b, dec(h))
+
+        for (var key in sX)
+        {
+            s2[key] = sX[key];
+        }
+
+//         var s2 = _evaluateDict(s, t, l, src, tt, b, dec(h))
 
         var l2 = l;
         if ("*" in t)
@@ -731,29 +745,29 @@
         return retval
     }
 
-    function _evaluateEvalTCO(s, t, l, src, tt, b, h)
-    {
-        logenter("_evaluateEval", s, t, h)
+//     function _evaluateEvalTCO(s, t, l, src, tt, b, h)
+//     {
+//         logenter("_evaluateEval", s, t, h)
 
-        var retval;
+//         var retval;
 
-        var t2 = _evaluate(s, t["!"], l, src, tt, b, dec(h))
+//         var t2 = _evaluate(s, t["!"], l, src, tt, b, dec(h))
 
-        var s2 = _evaluateDict(s, t, l, src, tt, b, dec(h))
+//         var s2 = _evaluateDict(s, t, l, src, tt, b, dec(h))
 
-        var l2 = l;
-        if ("*" in t)
-        {
-            l2 = _evaluateDict(s, t["*"], l, src, tt, b, dec(h))
-        }
+//         var l2 = l;
+//         if ("*" in t)
+//         {
+//             l2 = _evaluateDict(s, t["*"], l, src, tt, b, dec(h))
+//         }
 
-        retval = {s: s2, t: t2, l: l2}
+//         retval = {s: s2, t: t2, l: l2}
 
-        //retval = _evaluate(s2, t2, l2, src, tt, b, dec(h))
+//         //retval = _evaluate(s2, t2, l2, src, tt, b, dec(h))
 
-        // logexit("_evaluateEval", retval, h)
-        return retval
-    }
+//         // logexit("_evaluateEval", retval, h)
+//         return retval
+//     }
 
     function _evaluateDict(s, t, l, src, tt, b, h)
     {
@@ -812,44 +826,44 @@
         return retval
     }
 
-    function _evaluatePathHead(s, t, l, src, tt, b, h)
-    {
-        logenter("_evaluatePathHead", s, t, h)
+//     function _evaluatePathHead(s, t, l, src, tt, b, h)
+//     {
+//         logenter("_evaluatePathHead", s, t, h)
 
-        var retval;
+//         var retval;
 
-        var path_t = {
-            "&": "path",
-            "path": t
-        }
+//         var path_t = {
+//             "&": "path",
+//             "path": t
+//         }
 
-        var resultlist = _evaluateBuiltin(s, path_t, l, src, tt, b, dec(h))
+//         var resultlist = _evaluateBuiltin(s, path_t, l, src, tt, b, dec(h))
 
-        if (resultlist.length)
-            retval = resultlist[0]
-        else
-            retval = null;
+//         if (resultlist.length)
+//             retval = resultlist[0]
+//         else
+//             retval = null;
 
-        logexit("_evaluatePathHead", retval, h)
-        return retval
-    }
+//         logexit("_evaluatePathHead", retval, h)
+//         return retval
+//     }
 
-    function _evaluatePath(s, t, l, src, tt, b, h)
-    {
-        logenter("_evaluatePath", s, t, h)
+//     function _evaluatePath(s, t, l, src, tt, b, h)
+//     {
+//         logenter("_evaluatePath", s, t, h)
 
-        var retval;
+//         var retval;
 
-        var path_t = {
-            "&": "path",
-            "path": t
-        }
+//         var path_t = {
+//             "&": "path",
+//             "path": t
+//         }
 
-        retval = _evaluateBuiltin(s, path_t, l, src, tt, b, dec(h))
+//         retval = _evaluateBuiltin(s, path_t, l, src, tt, b, dec(h))
 
-        logexit("_evaluatePath", retval, h)
-        return retval
-    }
+//         logexit("_evaluatePath", retval, h)
+//         return retval
+//     }
 
     function _flatten(lst)
     {
@@ -1118,115 +1132,115 @@
         return str2.indexOf(str1) === 0
     }
 
-    /* JSONPath 0.8.5 - XPath for JSON
- *
- * Copyright (c) 2007 Stefan Goessner (goessner.net)
- * Licensed under the MIT (MIT-LICENSE.txt) licence.
- *
- * Proposal of Chris Zyp goes into version 0.9.x
- * Issue 7 resolved
- */
-    function jsonPath(obj, expr, arg) {
-        var P = {
-            resultType: arg && arg.resultType || "VALUE",
-            result: [],
-            normalize: function(expr) {
-                var subx = [];
-                return expr.replace(/[\['](\??\(.*?\))[\]']|\['(.*?)'\]/g, function($0, $1, $2) {
-                    return "[#" + (subx.push($1 || $2) - 1) + "]";
-                }) /* http://code.google.com/p/jsonpath/issues/detail?id=4 */
-                .replace(/'?\.'?|\['?/g, ";")
-                .replace(/;;;|;;/g, ";..;")
-                .replace(/;$|'?\]|'$/g, "")
-                .replace(/#([0-9]+)/g, function($0, $1) {
-                    return subx[$1];
-                });
-            },
-            asPath: function(path) {
-                var x = path.split(";"), p = "$";
-                for (var i = 1, n = x.length; i < n; i++)
-                    p += /^[0-9*]+$/.test(x[i]) ? ("[" + x[i] + "]") : ("['" + x[i] + "']");
-                return p;
-            },
-            store: function(p, v) {
-                if (p)
-                    P.result[P.result.length] = P.resultType == "PATH" ? P.asPath(p) : v;
-                return !!p;
-            },
-            trace: function(expr, val, path) {
-                if (expr !== "") {
-                    var x = expr.split(";"), loc = x.shift();
-                    x = x.join(";");
-                    if (val && val.hasOwnProperty(loc))
-                        P.trace(x, val[loc], path + ";" + loc);
-                    else if (loc === "*")
-                        P.walk(loc, x, val, path, function(m, l, x, v, p) {
-                            P.trace(m + ";" + x, v, p);
-                        });
-                    else if (loc === "..") {
-                        P.trace(x, val, path);
-                        P.walk(loc, x, val, path, function(m, l, x, v, p) {
-                            typeof v[m] === "object" && P.trace("..;" + x, v[m], p + ";" + m);
-                        });
-                    } 
-                    else if (/^\(.*?\)$/.test(loc)) // [(expr)]
-                        P.trace(P.eval(loc, val, path.substr(path.lastIndexOf(";") + 1)) + ";" + x, val, path);
-                    else if (/^\?\(.*?\)$/.test(loc)) // [?(expr)]
-                        P.walk(loc, x, val, path, function(m, l, x, v, p) {
-                            if (P.eval(l.replace(/^\?\((.*?)\)$/, "$1"), v instanceof Array ? v[m] : v, m))
-                                P.trace(m + ";" + x, v, p);
-                        }); // issue 5 resolved
-                    else if (/^(-?[0-9]*):(-?[0-9]*):?([0-9]*)$/.test(loc)) // [start:end:step]  phyton slice syntax
-                        P.slice(loc, x, val, path);
-                    else if (/,/.test(loc)) { // [name1,name2,...]
-                        for (var s = loc.split(/'?,'?/), i = 0, n = s.length; i < n; i++)
-                            P.trace(s[i] + ";" + x, val, path);
-                    }
-                } 
-                else
-                    P.store(path, val);
-            },
-            walk: function(loc, expr, val, path, f) {
-                if (val instanceof Array) {
-                    for (var i = 0, n = val.length; i < n; i++)
-                        if (i in val)
-                            f(i, loc, expr, val, path);
-                } 
-                else if (typeof val === "object") {
-                    for (var m in val)
-                        if (val.hasOwnProperty(m))
-                            f(m, loc, expr, val, path);
-                }
-            },
-            slice: function(loc, expr, val, path) {
-                if (val instanceof Array) {
-                    var len = val.length, start = 0, end = len, step = 1;
-                    loc.replace(/^(-?[0-9]*):(-?[0-9]*):?(-?[0-9]*)$/g, function($0, $1, $2, $3) {
-                        start = parseInt($1 || start);
-                        end = parseInt($2 || end);
-                        step = parseInt($3 || step);
-                    });
-                    start = (start < 0) ? Math.max(0, start + len) : Math.min(len, start);
-                    end = (end < 0) ? Math.max(0, end + len) : Math.min(len, end);
-                    for (var i = start; i < end; i += step)
-                        P.trace(i + ";" + expr, val, path);
-                }
-            },
-            eval: function(x, _v, _vname) {
-                try {
-                    return $ && _v && eval(x.replace(/(^|[^\\])@/g, "$1_v").replace(/\\@/g, "@"));
-                }  // issue 7 : resolved ..
-                catch (e) {
-                    throw new SyntaxError("jsonPath: " + e.message + ": " + x.replace(/(^|[^\\])@/g, "$1_v").replace(/\\@/g, "@"));
-                } // issue 7 : resolved ..
-            }
-        };
+//     /* JSONPath 0.8.5 - XPath for JSON
+//  *
+//  * Copyright (c) 2007 Stefan Goessner (goessner.net)
+//  * Licensed under the MIT (MIT-LICENSE.txt) licence.
+//  *
+//  * Proposal of Chris Zyp goes into version 0.9.x
+//  * Issue 7 resolved
+//  */
+//     function jsonPath(obj, expr, arg) {
+//         var P = {
+//             resultType: arg && arg.resultType || "VALUE",
+//             result: [],
+//             normalize: function(expr) {
+//                 var subx = [];
+//                 return expr.replace(/[\['](\??\(.*?\))[\]']|\['(.*?)'\]/g, function($0, $1, $2) {
+//                     return "[#" + (subx.push($1 || $2) - 1) + "]";
+//                 }) /* http://code.google.com/p/jsonpath/issues/detail?id=4 */
+//                 .replace(/'?\.'?|\['?/g, ";")
+//                 .replace(/;;;|;;/g, ";..;")
+//                 .replace(/;$|'?\]|'$/g, "")
+//                 .replace(/#([0-9]+)/g, function($0, $1) {
+//                     return subx[$1];
+//                 });
+//             },
+//             asPath: function(path) {
+//                 var x = path.split(";"), p = "$";
+//                 for (var i = 1, n = x.length; i < n; i++)
+//                     p += /^[0-9*]+$/.test(x[i]) ? ("[" + x[i] + "]") : ("['" + x[i] + "']");
+//                 return p;
+//             },
+//             store: function(p, v) {
+//                 if (p)
+//                     P.result[P.result.length] = P.resultType == "PATH" ? P.asPath(p) : v;
+//                 return !!p;
+//             },
+//             trace: function(expr, val, path) {
+//                 if (expr !== "") {
+//                     var x = expr.split(";"), loc = x.shift();
+//                     x = x.join(";");
+//                     if (val && val.hasOwnProperty(loc))
+//                         P.trace(x, val[loc], path + ";" + loc);
+//                     else if (loc === "*")
+//                         P.walk(loc, x, val, path, function(m, l, x, v, p) {
+//                             P.trace(m + ";" + x, v, p);
+//                         });
+//                     else if (loc === "..") {
+//                         P.trace(x, val, path);
+//                         P.walk(loc, x, val, path, function(m, l, x, v, p) {
+//                             typeof v[m] === "object" && P.trace("..;" + x, v[m], p + ";" + m);
+//                         });
+//                     } 
+//                     else if (/^\(.*?\)$/.test(loc)) // [(expr)]
+//                         P.trace(P.eval(loc, val, path.substr(path.lastIndexOf(";") + 1)) + ";" + x, val, path);
+//                     else if (/^\?\(.*?\)$/.test(loc)) // [?(expr)]
+//                         P.walk(loc, x, val, path, function(m, l, x, v, p) {
+//                             if (P.eval(l.replace(/^\?\((.*?)\)$/, "$1"), v instanceof Array ? v[m] : v, m))
+//                                 P.trace(m + ";" + x, v, p);
+//                         }); // issue 5 resolved
+//                     else if (/^(-?[0-9]*):(-?[0-9]*):?([0-9]*)$/.test(loc)) // [start:end:step]  phyton slice syntax
+//                         P.slice(loc, x, val, path);
+//                     else if (/,/.test(loc)) { // [name1,name2,...]
+//                         for (var s = loc.split(/'?,'?/), i = 0, n = s.length; i < n; i++)
+//                             P.trace(s[i] + ";" + x, val, path);
+//                     }
+//                 } 
+//                 else
+//                     P.store(path, val);
+//             },
+//             walk: function(loc, expr, val, path, f) {
+//                 if (val instanceof Array) {
+//                     for (var i = 0, n = val.length; i < n; i++)
+//                         if (i in val)
+//                             f(i, loc, expr, val, path);
+//                 } 
+//                 else if (typeof val === "object") {
+//                     for (var m in val)
+//                         if (val.hasOwnProperty(m))
+//                             f(m, loc, expr, val, path);
+//                 }
+//             },
+//             slice: function(loc, expr, val, path) {
+//                 if (val instanceof Array) {
+//                     var len = val.length, start = 0, end = len, step = 1;
+//                     loc.replace(/^(-?[0-9]*):(-?[0-9]*):?(-?[0-9]*)$/g, function($0, $1, $2, $3) {
+//                         start = parseInt($1 || start);
+//                         end = parseInt($2 || end);
+//                         step = parseInt($3 || step);
+//                     });
+//                     start = (start < 0) ? Math.max(0, start + len) : Math.min(len, start);
+//                     end = (end < 0) ? Math.max(0, end + len) : Math.min(len, end);
+//                     for (var i = start; i < end; i += step)
+//                         P.trace(i + ";" + expr, val, path);
+//                 }
+//             },
+//             eval: function(x, _v, _vname) {
+//                 try {
+//                     return $ && _v && eval(x.replace(/(^|[^\\])@/g, "$1_v").replace(/\\@/g, "@"));
+//                 }  // issue 7 : resolved ..
+//                 catch (e) {
+//                     throw new SyntaxError("jsonPath: " + e.message + ": " + x.replace(/(^|[^\\])@/g, "$1_v").replace(/\\@/g, "@"));
+//                 } // issue 7 : resolved ..
+//             }
+//         };
         
-        var $ = obj;
-        if (expr && obj && (P.resultType == "VALUE" || P.resultType == "PATH")) {
-            P.trace(P.normalize(expr).replace(/^\$;?/, ""), obj, "$"); // issue 6 resolved
-            return P.result.length ? P.result : false;
-        }
-    }
+//         var $ = obj;
+//         if (expr && obj && (P.resultType == "VALUE" || P.resultType == "PATH")) {
+//             P.trace(P.normalize(expr).replace(/^\$;?/, ""), obj, "$"); // issue 6 resolved
+//             return P.result.length ? P.result : false;
+//         }
+//     }
 
 }));

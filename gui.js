@@ -152,6 +152,14 @@ $(document).ready(function(){
 
             distributions.push(coreresponse.data)
             distributions.push(coretestsresponse.data)
+            try
+            {
+              distributions.push(sUTLLocal)
+            }
+            catch(err)
+            {
+              console.log(err)
+            }
 
             edSource.setValue(getStoredText("sourceTextsUTL2",  JSON.stringify(_defaultSource, null, 2)))
             edSource.gotoLine(0);
