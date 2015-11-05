@@ -686,8 +686,13 @@
                     } 
                 }
 
-                if (isArray(retval) && retval.length && t["head"])
-                    retval = retval[0] 
+                if (isArray(retval) && t["head"])
+                {
+                    if (retval.length)
+                        retval = retval[0] 
+                    else
+                        retval = null;
+                }
             }
             else
             {
