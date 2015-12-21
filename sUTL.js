@@ -132,48 +132,6 @@
     function builtins()
     {
         var retval = {
-//             "path": function(parentscope, scope, l, src, tt, b, h)
-//             {
-//                 var fullpath = get(scope, "path", "")
-
-//                 if (!fullpath)
-//                 {
-//                     console.log("here")
-//                 }
-//                 var prefix = fullpath.slice(0, 1)
-//                 var path = fullpath.slice(1)
-//                 var childscope = null;
-
-//                 if (prefix == '@')
-//                 {
-//                     childscope = parentscope
-//                 }
-//                 else if (prefix == '^')
-//                 {
-//                     childscope = scope // is this even a thing?
-//                 }
-//                 else if (prefix == '*')
-//                 {
-//                     childscope = l
-//                 }
-//                 else if (prefix == '$')
-//                 {
-//                     childscope = src
-//                 }
-//                 else if (prefix == '~')
-//                 {
-//                     childscope = tt
-//                 }
-
-//                 if (childscope)
-//                 {
-//                     return jsonPath(childscope, "$" + path) || []
-//                 }
-//                 else
-//                 {
-//                     return [];
-//                 }
-//             },
             "+": function(parentscope, scope, l, src, tt, b, h)
             {
                 var a = get(scope, "a", 0)
@@ -412,15 +370,6 @@
                 else
                     return null;
             }
-//             "uuid": function(parentscope, scope, l, src, tt, b, h) {
-//                 var d = new Date().getTime();
-//                 var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-//                     var r = (d + Math.random()*16)%16 | 0;
-//                     d = Math.floor(d/16);
-//                     return (c=='x' ? r : (r&0x3|0x8)).toString(16);
-//                 });
-//                 return uuid;
-//             }
         }
 
         for (var key in retval)
@@ -504,11 +453,6 @@
             {
                 r = _evaluateEval(s1, t1, l1, src, tt, b, dec(h));
                 done = true;
-
-                //var res = _evaluateEvalTCO(s1, t1, l1, src, tt, b, dec(h));
-                //s1 = res.s;
-                //t1 = res.t;
-                //l1 = res.l;
             }
             else if (isBuiltinEval(t1))
             {
@@ -548,16 +492,6 @@
                 r = _evaluateStringBuiltin(s1, t1, l1, src, tt, b, dec(h))
                 done = true;
             }
-//             else if (isPathTransform(t1))
-//             {
-//                 r = _evaluatePath(s1, t1.slice(2), l1, src, tt, b, dec(h))
-//                 done = true;
-//             }
-//             else if (isPathHeadTransform(t1))
-//             {
-//                 r = _evaluatePathHead(s1, t1.slice(1), l1, src, tt, b, dec(h))
-//                 done = true;
-//             }
             else
             {
                 r = t1; // simple transform
@@ -634,8 +568,8 @@
 
         var uset = {
             "&": _getArrayBuiltinName(lop),
-//            "args": t.slice(1), 
-            "args": _evaluateList(s, t.slice(1), l, src, tt, b, h),
+            "args": t.slice(1), 
+//            "args": _evaluateList(s, t.slice(1), l, src, tt, b, h),
             "head": lopChar == "^"
         }
 
@@ -648,64 +582,97 @@
 
         var retval = null;
 
-        var builtinf = get(b, t["&"], null);
-
-        if (builtinf)
+        if ("args" in t)
         {
-            var uset = t;
-
-            if ("args" in t)
+            // args format relies on reducing over the list
+            if (t["args"].length == 0)
             {
-                // args format relies on reducing over the list
-                if (t["args"].length == 0)
-                {
-                    uset = {
-                        "&": t["&"]
-                    }
-
-                    retval = _evaluateBuiltin(s, uset, l, src, tt, b, dec(h))
-                }
-                else if (t["args"].length == 1)
-                {
-                    uset = {
-                        "&": t["&"],
-                        "b": t["args"][0]
-                    }
-
-                    retval = _evaluateBuiltin(s, uset, l, src, tt, b, dec(h))
-                }
-                else
-                {
-                    // 2 or more items in the args list. Reduce over them
-                    var list = t["args"].slice(1)
-                    retval = t["args"][0]
-
-                    for (var ix in list)
-                    {
-                        var item = list[ix];
-
-                        uset = {
-                          "&": t["&"],
-                          "a": retval,
-                          "b": item,
-                          "notfirst": ix > 0
-                        }
-
-                        retval = _evaluateBuiltin(s, uset, l, src, tt, b, dec(h))
-                    } 
+                var uset = {
+                    "&": t["&"]
                 }
 
-                if (isArray(retval) && t["head"])
-                {
-                    if (retval.length)
-                        retval = retval[0] 
-                    else
-                        retval = null;
+                retval = _evaluateBuiltin(s, uset, l, src, tt, b, dec(h))
+            }
+            else if (t["args"].length == 1)
+            {
+                var uset = {
+                    "&": t["&"],
+                    "b": t["args"][0]
                 }
+
+                retval = _evaluateBuiltin(s, uset, l, src, tt, b, dec(h))
             }
             else
             {
-                var s2 = _evaluateDict(s, t, l, src, tt, b, dec(h))
+                // 2 or more items in the args list. Reduce over them
+                var list = t["args"].slice(1)
+                retval = t["args"][0]
+
+                for (var ix in list)
+                {
+                    var item = list[ix];
+
+                    uset = {
+                      "&": t["&"],
+                      "a": retval,
+                      "b": item,
+                      "notfirst": ix > 0
+                    }
+
+                    retval = _evaluateBuiltin(s, uset, l, src, tt, b, dec(h))
+                } 
+            }
+
+            if (isArray(retval) && t["head"])
+            {
+                if (retval.length)
+                    retval = retval[0] 
+                else
+                    retval = null;
+            }
+        }
+        else
+        {
+            var builtinf = get(b, t["&"], null);
+
+            var llibname;
+
+            if (builtinf)
+                llibname = "_override_" + t["&"]
+            else    
+                llibname = t["&"]
+
+            if (llibname in l)
+            {
+                var t2 = {};
+
+                for (var key in t)
+                {
+                    t2[key] = t[key];
+                }
+
+                t2["!"] = ["^*", t["&"]]
+                delete t2["&"]
+
+                retval = _evaluateEval(s, t2, l, src, tt, b, dec(h))
+            } 
+            else if (builtinf)
+            {
+                var s2 = {};
+
+                for (var key in s)
+                {
+                    s2[key] = s[key];
+                }
+
+                var sX = _evaluateDict(s, t, l, src, tt, b, dec(h))
+
+                for (var key in sX)
+                {
+                    s2[key] = sX[key];
+                }
+
+                //var s2 = _evaluateDict(s, t, l, src, tt, b, dec(h))
 
                 var l2 = l;
                 if ("*" in t)
@@ -720,6 +687,7 @@
         logexit("_evaluateBuiltin", retval, h)
         return retval
     }
+
 
     function _evaluateEval(s, t, l, src, tt, b, h)
     {
