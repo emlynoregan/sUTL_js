@@ -41,7 +41,7 @@
             return "number"
         else if (isBool(item))
             return "boolean"
-        else if (item = null)
+        else if (item == null)
             return "null"
         else
             return "unknown"
@@ -189,35 +189,35 @@
             },
             "*": function(parentscope, scope, l, src, tt, b, h)
             {
-                return get(scope, "a", 1) * get(scope, "b", 1, h)
+                return get(scope, "a", 1) * get(scope, "b", 1)
             },
             "/": function(parentscope, scope, l, src, tt, b, h)
             {
-                return get(scope, "a", 1) / get(scope, "b", 1, h)
+                return get(scope, "a", 1) / get(scope, "b", 1)
             },
             "=": function(parentscope, scope, l, src, tt, b, h)
             {
-                return get(scope, "a", 0) === get(scope, "b", 0, h)
+                return get(scope, "a", null) === get(scope, "b", null)
             },
             "!=": function(parentscope, scope, l, src, tt, b, h)
             {
-                return get(scope, "a", 0) !== get(scope, "b", 0)
+                return get(scope, "a", null) !== get(scope, "b", null)
             },
             ">=": function(parentscope, scope, l, src, tt, b, h)
             {
-                return get(scope, "a", 0) >= get(scope, "b", 0)
+                return get(scope, "a", null) >= get(scope, "b", null)
             },
             "<=": function(parentscope, scope, l, src, tt, b, h)
             {
-                return get(scope, "a", 0) <= get(scope, "b", 0)
+                return get(scope, "a", null) <= get(scope, "b", null)
             },
             ">": function(parentscope, scope, l, src, tt, b, h)
             {
-                return get(scope, "a", 0) > get(scope, "b", 0)
+                return get(scope, "a", null) > get(scope, "b", null)
             },
             "<": function(parentscope, scope, l, src, tt, b, h)
             {
-                return get(scope, "a", 0) < get(scope, "b", 0)
+                return get(scope, "a", null) < get(scope, "b", null)
             },
             "&&": function(parentscope, scope, l, src, tt, b, h)
             {
