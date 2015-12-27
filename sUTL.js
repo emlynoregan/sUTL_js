@@ -65,6 +65,21 @@
         }
     }
 
+    function IsTruthy(aObj)
+    {
+        var condvalue = aObj;
+        if (isArray(condvalue) && condvalue.length == 0)
+        {
+            condvalue = false
+        }
+        if (isObject(condvalue) && Object.keys(condvalue).length == 0)
+        {
+            condvalue = false
+        }
+        condvalue = !!condvalue;
+        return condvalue
+    }
+
     function _doPath(a, b)
     {
         var retval = [];
@@ -181,19 +196,19 @@
             {
                 if ("a" in scope)
                     if ("b" in scope)
-                        return get(scope, "a", false) && get(scope, "b", false)
+                        return IsTruthy(get(scope, "a", false)) && IsTruthy(get(scope, "b", false))
                     else
-                        return get(scope, "a", false)
+                        return IsTruthy(get(scope, "a", false))
                 else
-                    get(scope, "b", false)
+                    IsTruthy(get(scope, "b", false))
             },
             "||": function(parentscope, scope, l, src, tt, b, h)
             {
-                return get(scope, "a", false) || get(scope, "b", false)
+                return IsTruthy(get(scope, "a", false)) || IsTruthy(get(scope, "b", false))
             },
             "!": function(parentscope, scope, l, src, tt, b, h)
             {
-                return ! get(scope, "b", false)
+                return ! IsTruthy(get(scope, "b", false))
             },
             "if": function(parentscope, scope, l, src, tt, b, h)
             {
@@ -201,9 +216,10 @@
                 var condvalue = false;
 
                 if ("cond" in scope)
-                    condvalue = _evaluate(parentscope, scope["cond"], l, src, tt, b, h)
-                    if (isArray(condvalue) && condvalue.length == 0)
-                        condvalue = false
+                {
+                    condvalue = IsTruthy(_evaluate(parentscope, scope["cond"], l, src, tt, b, h))
+                }
+                    
 
                 if (condvalue)
                 {
