@@ -1,3 +1,4 @@
+/*eslint-env node */
 'use strict';
 
 (function(root, factory) {
@@ -49,20 +50,35 @@
 
     function _processPath(startfrom, parentscope, scope, l, src, tt, b, h)
     {    
-        var la = get(scope, "a", null)
-        var lb = get(scope, "b", null)
-        var lnotfirst = get(scope, "notfirst", false)
+        var la = get(scope, "a", null);
+        var lb = get(scope, "b", null);
+        var lnotfirst = get(scope, "notfirst", false);
 
         if (lnotfirst)
         {
-            return _doPath(la, lb)
+            return _doPath(la, lb);
         }
         else
         {
             // first one. Both a and b are path components.
-            var laccum = _doPath([startfrom], la)
-            return _doPath(laccum, lb)
+            var laccum = _doPath([startfrom], la);
+            return _doPath(laccum, lb);
         }
+    }
+
+    function IsTruthy(aObj)
+    {
+        var condvalue = aObj;
+        if (isArray(condvalue) && condvalue.length === 0)
+        {
+            condvalue = false;
+        }
+        if (isObject(condvalue) && Object.keys(condvalue).length === 0)
+        {
+            condvalue = false;
+        }
+        condvalue = !!condvalue;
+        return condvalue;
     }
 
     function _doPath(a, b)
@@ -78,30 +94,30 @@
                     var aItem = a[ix]; 
                     try
                     {
-                        if (b == "**") 
+                        if (b === "**") 
                         {
-                            retval.push(aItem)
+                            retval.push(aItem);
                             var lstack = [aItem];
                             while (lstack.length > 0)
                             {
-                                var litem = lstack.pop()
+                                var litem = lstack.pop();
                                 if (isObject(litem) || isArray(litem))
                                 {
                                     for (var key in litem)
                                     {
-                                        retval.push(litem[key])
-                                        lstack.push(litem[key])
+                                        retval.push(litem[key]);
+                                        lstack.push(litem[key]);
                                     }
                                 }
                             }
                         }
-                        else if (b == "*")
+                        else if (b === "*")
                         {
                             if (isObject(aItem) || isArray(aItem))
                             {
-                                for (var key in aItem)
+                                for (var lkey in aItem)
                                 {
-                                    retval.push(aItem[key])
+                                    retval.push(aItem[lkey]);
                                 }
                             }
                         }
@@ -118,7 +134,7 @@
                     }
                     catch (ex)
                     {
-                        console.log(ex)
+                        console.log(ex);
                     }
                 }
             }
@@ -126,7 +142,7 @@
                 retval = a;
         }
 
-        return retval
+        return retval;
     }
 
     function builtins()
@@ -134,66 +150,66 @@
         var retval = {
             "+": function(parentscope, scope, l, src, tt, b, h)
             {
-                var a = get(scope, "a", 0)
-                var b = get(scope, "b", 0)
-                if (gettype(a) == gettype(b))
-                    return a + b
+                var a = get(scope, "a", 0);
+                var bb = get(scope, "b", 0);
+                if (gettype(a) === gettype(bb))
+                    return a + bb;
                 else
-                    return null
+                    return null;
             },
             "-": function(parentscope, scope, l, src, tt, b, h)
             {
-                return get(scope, "a", 0) - get(scope, "b", 0)
+                return get(scope, "a", 0) - get(scope, "b", 0);
             },
-            "*": function(parentscope, scope, l, src, tt, b, h)
+            "x": function(parentscope, scope, l, src, tt, b, h)
             {
-                return get(scope, "a", 1) * get(scope, "b", 1)
+                return get(scope, "a", 1) * get(scope, "b", 1);
             },
             "/": function(parentscope, scope, l, src, tt, b, h)
             {
-                return get(scope, "a", 1) / get(scope, "b", 1)
+                return get(scope, "a", 1) / get(scope, "b", 1);
             },
             "=": function(parentscope, scope, l, src, tt, b, h)
             {
-                return get(scope, "a", null) === get(scope, "b", null)
+                return get(scope, "a", null) === get(scope, "b", null);
             },
             "!=": function(parentscope, scope, l, src, tt, b, h)
             {
-                return get(scope, "a", null) !== get(scope, "b", null)
+                return get(scope, "a", null) !== get(scope, "b", null);
             },
             ">=": function(parentscope, scope, l, src, tt, b, h)
             {
-                return get(scope, "a", null) >= get(scope, "b", null)
+                return get(scope, "a", null) >= get(scope, "b", null);
             },
             "<=": function(parentscope, scope, l, src, tt, b, h)
             {
-                return get(scope, "a", null) <= get(scope, "b", null)
+                return get(scope, "a", null) <= get(scope, "b", null);
             },
             ">": function(parentscope, scope, l, src, tt, b, h)
             {
-                return get(scope, "a", null) > get(scope, "b", null)
+                return get(scope, "a", null) > get(scope, "b", null);
             },
             "<": function(parentscope, scope, l, src, tt, b, h)
             {
-                return get(scope, "a", null) < get(scope, "b", null)
+                return get(scope, "a", null) < get(scope, "b", null);
             },
             "&&": function(parentscope, scope, l, src, tt, b, h)
             {
                 if ("a" in scope)
                     if ("b" in scope)
-                        return get(scope, "a", false) && get(scope, "b", false)
+                        return IsTruthy(get(scope, "a", false)) && IsTruthy(get(scope, "b", false));
                     else
-                        return get(scope, "a", false)
+                        return IsTruthy(get(scope, "a", false));
                 else
-                    get(scope, "b", false)
+                    IsTruthy(get(scope, "b", false));
             },
             "||": function(parentscope, scope, l, src, tt, b, h)
             {
-                return get(scope, "a", false) || get(scope, "b", false)
+                return IsTruthy(get(scope, "a", false)) || IsTruthy(get(scope, "b", false));
             },
             "!": function(parentscope, scope, l, src, tt, b, h)
             {
-                return ! get(scope, "b", false)
+                return ! IsTruthy(get(scope, "b", false));
             },
             "if": function(parentscope, scope, l, src, tt, b, h)
             {
@@ -201,34 +217,35 @@
                 var condvalue = false;
 
                 if ("cond" in scope)
-                    condvalue = _evaluate(parentscope, scope["cond"], l, src, tt, b, h)
-                    if (isArray(condvalue) && condvalue.length == 0)
-                        condvalue = false
+                {
+                    condvalue = IsTruthy(_evaluate(parentscope, scope["cond"], l, src, tt, b, h));
+                }
+                    
 
                 if (condvalue)
                 {
                     if ("true" in scope)
-                        retval = _evaluate(parentscope, scope["true"], l, src, tt, b, h)
+                        retval = _evaluate(parentscope, scope["true"], l, src, tt, b, h);
                 }
                 else
                 {
                     if ("false" in scope)
-                        retval = _evaluate(parentscope, scope["false"], l, src, tt, b, h)
+                        retval = _evaluate(parentscope, scope["false"], l, src, tt, b, h);
                 }
 
-                return retval
+                return retval;
             },
             "keys": function(parentscope, scope, l, src, tt, b, h)
             {
-                var obj = get(scope, "map", null)
+                var obj = get(scope, "map", null);
                 if (isObject(obj))
-                    return Object.keys(obj)
+                    return Object.keys(obj);
                 else
-                    return null
+                    return null;
             },
             "values": function(parentscope, scope, l, src, tt, b, h)
             {
-                var obj = get(scope, "map", null)
+                var obj = get(scope, "map", null);
                 if (isObject(obj))
                 {
                     var vals = Object.keys(obj).map(function (key) {
@@ -237,25 +254,25 @@
                     return vals;
                 }
                 else
-                    return null
+                    return null;
             },
             "len": function(parentscope, scope, l, src, tt, b, h)
             {
-                var item = get(scope, "list", null)
-                if (gettype(item) == "list")
-                    return item.length
+                var item = get(scope, "list", null);
+                if (gettype(item) === "list")
+                    return item.length;
                 else
-                    return 0
+                    return 0;
             },
             "type": function(parentscope, scope, l, src, tt, b, h)
             {
-                var item = get(scope, "value", null)
-                return gettype(item)
+                var item = get(scope, "value", null);
+                return gettype(item);
             },
             "makemap":function(parentscope, scope, l, src, tt, b, h)
             {
-                retval = {}
-                var item = get(scope, "value", null)
+                retval = {};
+                var item = get(scope, "value", null);
                 if (isArray(item))
                 {
                     for (var ix in item)
@@ -263,7 +280,7 @@
                         var entry = item[ix];
                         if (isArray(entry) && entry.length >= 2 && isString(entry[0]))
                         {
-                            retval[entry[0]] = entry[1]
+                            retval[entry[0]] = entry[1];
                         }
                     } 
 
@@ -447,49 +464,54 @@
 
         while (!done)
         {
-            logenter("_evaluate: " + counter, s1, t1, h)
+            logenter("_evaluate: " + counter, s1, t1, h);
 
             if (isEval(t1))
             {
                 r = _evaluateEval(s1, t1, l1, src, tt, b, dec(h));
                 done = true;
             }
+            else if (isEval2(t1))
+            {
+                r = _evaluateEval2(s1, t1, l1, src, tt, b, dec(h));
+                done = true;
+            }
             else if (isBuiltinEval(t1))
             {
-                r = _evaluateBuiltin(s1, t1, l1, src, tt, b, dec(h))
+                r = _evaluateBuiltin(s1, t1, l1, src, tt, b, dec(h));
                 done = true;
             }
             else if (isQuoteEval(t1))
             {
-                r = _quoteEvaluate(s1, t1["'"], l1, src, tt, b, dec(h))
+                r = _quoteEvaluate(s1, t1["'"], l1, src, tt, b, dec(h));
                 done = true;
             }
             else if (isColonEval(t1))
             {
-                r = t1[":"]
+                r = t1[":"];
                 done = true;
             }
             else if (isDictTransform(t1))
             {
-                r = _evaluateDict(s1, t1, l1, src, tt, b, dec(h))
+                r = _evaluateDict(s1, t1, l1, src, tt, b, dec(h));
                 done = true;
             }
             else if (isArrayBuiltinEval(t1, b))
             {
-                r = _evaluateArrayBuiltin(s1, t1, l1, src, tt, b, dec(h))
+                r = _evaluateArrayBuiltin(s1, t1, l1, src, tt, b, dec(h));
                 done = true;
             }
             else if (isListTransform(t1))
             {
-                if (t1.length > 0 && t1[0] == "&&")
-                    r = _flatten(_evaluateList(s1, t1.slice(1), l1, src, tt, b, dec(h)))
+                if (t1.length > 0 && t1[0] === "&&")
+                    r = _flatten(_evaluateList(s1, t1.slice(1), l1, src, tt, b, dec(h)));
                 else
-                    r = _evaluateList(s1, t1, l1, src, tt, b, dec(h))
+                    r = _evaluateList(s1, t1, l1, src, tt, b, dec(h));
                 done = true;
             }
             else if (isStringBuiltinEval(t1, b))
             {
-                r = _evaluateStringBuiltin(s1, t1, l1, src, tt, b, dec(h))
+                r = _evaluateStringBuiltin(s1, t1, l1, src, tt, b, dec(h));
                 done = true;
             }
             else
@@ -501,34 +523,34 @@
             counter++;
         }
 
-        logexit("_evaluate", r, h)
-        return r
+        logexit("_evaluate", r, h);
+        return r;
     }
 
     function _quoteEvaluate(s, t, l, src, tt, b, h)
     {
-        logenter("_quoteEvaluate", s, t, h)
+        logenter("_quoteEvaluate", s, t, h);
         var r;
 
         if (isDoubleQuoteEval(t))
         {
-            r = _evaluate(s, t["''"], l, src, tt, b, dec(h))
+            r = _evaluate(s, t["''"], l, src, tt, b, dec(h));
         }
         else if (isDictTransform(t))
         {
-            r = _quoteEvaluateDict(s, t, l, src, tt, b, dec(h))
+            r = _quoteEvaluateDict(s, t, l, src, tt, b, dec(h));
         }
         else if (isListTransform(t))
         {
-            r = _quoteEvaluateList(s, t, l, src, tt, b, dec(h))
+            r = _quoteEvaluateList(s, t, l, src, tt, b, dec(h));
         }
         else
         {
             r = t; // simple transform
         }
 
-        logexit("_quoteEvaluate", r, h)
-        return r
+        logexit("_quoteEvaluate", r, h);
+        return r;
     }
 
     function _getArrayBuiltinName(aOp)
@@ -543,16 +565,16 @@
     {
         var larr = t.split(".");
 
-        var larr2 = []
+        var larr2 = [];
 
         for (var lix in larr)
         {
-            var litem = larr[lix]
-            var i = parseInt(litem)
+            var litem = larr[lix];
+            var i = parseInt(litem);
             if (isNaN(i))
-                larr2.push(litem)
+                larr2.push(litem);
             else
-                larr2.push(i)
+                larr2.push(i);
         }
 
         return _evaluateArrayBuiltin(s, larr2, l, src, tt, b, h)
@@ -591,22 +613,23 @@
                     "&": t["&"]
                 }
 
-                retval = _evaluateBuiltin(s, uset, l, src, tt, b, dec(h))
+                retval = _evaluateBuiltinSimple(false, s, uset, l, src, tt, b, dec(h))
             }
             else if (t["args"].length == 1)
             {
                 var uset = {
                     "&": t["&"],
-                    "b": t["args"][0]
+                    "b": _evaluate(s, t["args"][0], l, src, tt, b, dec(h))
                 }
 
-                retval = _evaluateBuiltin(s, uset, l, src, tt, b, dec(h))
+                retval = _evaluateBuiltinSimple(false, s, uset, l, src, tt, b, dec(h))
             }
             else
             {
                 // 2 or more items in the args list. Reduce over them
-                var list = t["args"].slice(1)
-                retval = t["args"][0]
+                var list = _evaluateList(s, t["args"].slice(1), l, src, tt, b, dec(h));
+                
+                retval = _evaluate(s, t["args"][0], l, src, tt, b, dec(h));
 
                 for (var ix in list)
                 {
@@ -619,7 +642,7 @@
                       "notfirst": ix > 0
                     }
 
-                    retval = _evaluateBuiltin(s, uset, l, src, tt, b, dec(h))
+                    retval = _evaluateBuiltinSimple(false, s, uset, l, src, tt, b, dec(h))
                 } 
             }
 
@@ -633,129 +656,161 @@
         }
         else
         {
-            var builtinf = get(b, t["&"], null);
-
-            var llibname;
-
-            if (builtinf)
-                llibname = "_override_" + t["&"]
-            else    
-                llibname = t["&"]
-
-            if (llibname in l)
-            {
-                var t2 = {};
-
-                for (var key in t)
-                {
-                    t2[key] = t[key];
-                }
-
-                t2["!"] = ["^*", t["&"]]
-                delete t2["&"]
-
-                retval = _evaluateEval(s, t2, l, src, tt, b, dec(h))
-            } 
-            else if (builtinf)
-            {
-                var s2 = {};
-
-                for (var key in s)
-                {
-                    s2[key] = s[key];
-                }
-
-                var sX = _evaluateDict(s, t, l, src, tt, b, dec(h))
-
-                for (var key in sX)
-                {
-                    s2[key] = sX[key];
-                }
-
-                //var s2 = _evaluateDict(s, t, l, src, tt, b, dec(h))
-
-                var l2 = l;
-                if ("*" in t)
-                {
-                    l2 = _evaluateDict(s, t["*"], l, src, tt, b, dec(h))
-                }
-
-                retval = builtinf(s, s2, l2, src, tt, b, dec(h))
-            }
+            retval = _evaluateBuiltinSimple(true, s, t, l, src, tt, b, h);
         }
 
         logexit("_evaluateBuiltin", retval, h)
         return retval
     }
 
-
-    function _evaluateEval(s, t, l, src, tt, b, h)
+    function _evaluateBuiltinSimple(needseval, s, t, l, src, tt, b, h)
     {
-        logenter("_evaluateEval", s, t, h)
+        var retval = null;
 
-        var retval;
+        var builtinf = get(b, t["&"], null);
 
-        var t2 = _evaluate(s, t["!"], l, src, tt, b, dec(h))
+        var llibname;
 
-        var s2 = {};
+        if (builtinf)
+            llibname = "_override_" + t["&"]
+        else    
+            llibname = t["&"]
 
-        for (var key in s)
+        if (llibname in l)
         {
-            s2[key] = s[key];
+            var t2 = {};
+
+            for (var key in t)
+            {
+                t2[key] = t[key];
+            }
+
+            t2["!"] = ["^*", t["&"]]
+            delete t2["&"]
+
+            retval = _evaluateEval(s, t2, l, src, tt, b, dec(h))
+        } 
+        else if (builtinf)
+        {
+            var s2 = {};
+
+            for (var key in s)
+            {
+                s2[key] = s[key];
+            }
+
+            var sX;
+            if (needseval)
+            {
+                sX = _evaluateDict(s, t, l, src, tt, b, dec(h))
+            }
+            else
+            {
+                sX = t;
+            }
+
+            for (var key in sX)
+            {
+                s2[key] = sX[key];
+            }
+
+            //var s2 = _evaluateDict(s, t, l, src, tt, b, dec(h))
+
+            var l2 = l;
+            if ("*" in t)
+            {
+                l2 = _evaluateDict(s, t["*"], l, src, tt, b, dec(h))
+            }
+
+            retval = builtinf(s, s2, l2, src, tt, b, dec(h))
         }
 
-        var sX = _evaluateDict(s, t, l, src, tt, b, dec(h))
-
-        for (var key in sX)
-        {
-            s2[key] = sX[key];
-        }
-
-//         var s2 = _evaluateDict(s, t, l, src, tt, b, dec(h))
-
-        var l2 = l;
-        if ("*" in t)
-        {
-            l2 = _evaluateDict(s, t["*"], l, src, tt, b, dec(h))
-        }
-
-//         retval = {s: s2, t: t2, l: l2}
-
-        retval = _evaluate(s2, t2, l2, src, tt, b, dec(h))
-
-        logexit("_evaluateEval", retval, h)
         return retval
     }
 
-//     function _evaluateEvalTCO(s, t, l, src, tt, b, h)
-//     {
-//         logenter("_evaluateEval", s, t, h)
 
-//         var retval;
+    function _evaluateEval(s, t, l, src, tt, b, h)
+    {
+    	var newscope = {};
+    	var t2;
 
-//         var t2 = _evaluate(s, t["!"], l, src, tt, b, dec(h))
+        for (var key in t)
+        {
+        	if (key !== "!")
+	            newscope[key] = t[key];
+        }
+        
+        if (IsTruthy(newscope))
+        {
+            t2 = {
+              "!!": t["!"],
+              "s": newscope
+            };
+        }
+        else
+        {
+            t2 = {
+              "!!": t["!"]
+            };
+        }
+        
+    	return _evaluateEval2(s, t2, l, src, tt, b, h);
+	}
 
-//         var s2 = _evaluateDict(s, t, l, src, tt, b, dec(h))
+    function _evaluateEval2(s, t, l, src, tt, b, h)
+    {
+        logenter("_evaluateEval2", s, t, h);
 
-//         var l2 = l;
-//         if ("*" in t)
-//         {
-//             l2 = _evaluateDict(s, t["*"], l, src, tt, b, dec(h))
-//         }
+        var retval;
 
-//         retval = {s: s2, t: t2, l: l2}
+        var t2 = _evaluate(s, t["!!"], l, src, tt, b, dec(h));
 
-//         //retval = _evaluate(s2, t2, l2, src, tt, b, dec(h))
+        var s2 = s;
 
-//         // logexit("_evaluateEval", retval, h)
-//         return retval
-//     }
+        if ("s" in t)
+        {
+            var ts = _evaluate(s, t.s, l, src, tt, b, dec(h));
+
+            if (isObject(ts))
+            {
+                s2 = {};
+
+                if (isObject(s))
+                {
+                    for (var key in s)
+                    {
+                        s2[key] = s[key];
+                    }
+                }
+
+                for (var key2 in ts)
+                {
+                    s2[key2] = ts[key2];
+                }
+            }
+            else 
+            {
+                s2 = ts;
+            }
+        }
+		
+        var l2 = l;
+        if ("*" in t)
+        {
+            l2 = _evaluateDict(s, t["*"], l, src, tt, b, dec(h));
+        }
+
+        retval = _evaluate(s2, t2, l2, src, tt, b, dec(h));
+
+        logexit("_evaluateEval", retval, h);
+        return retval;
+    }
 
     function _evaluateDict(s, t, l, src, tt, b, h)
     {
-        logenter("_evaluateDict", s, t, h)
+        logenter("_evaluateDict", s, t, h);
 
-        var retval = {}
+        var retval = {};
         for (var key in t)
         {
             if ((key != "!") && (key != "&"))
@@ -901,6 +956,10 @@
 
     function isEval(obj) {
         return isObject(obj) && "!" in obj;
+    }
+
+    function isEval2(obj) {
+        return isObject(obj) && "!!" in obj;
     }
 
     function isQuoteEval(obj) {
@@ -1113,116 +1172,5 @@
     {
         return str2.indexOf(str1) === 0
     }
-
-//     /* JSONPath 0.8.5 - XPath for JSON
-//  *
-//  * Copyright (c) 2007 Stefan Goessner (goessner.net)
-//  * Licensed under the MIT (MIT-LICENSE.txt) licence.
-//  *
-//  * Proposal of Chris Zyp goes into version 0.9.x
-//  * Issue 7 resolved
-//  */
-//     function jsonPath(obj, expr, arg) {
-//         var P = {
-//             resultType: arg && arg.resultType || "VALUE",
-//             result: [],
-//             normalize: function(expr) {
-//                 var subx = [];
-//                 return expr.replace(/[\['](\??\(.*?\))[\]']|\['(.*?)'\]/g, function($0, $1, $2) {
-//                     return "[#" + (subx.push($1 || $2) - 1) + "]";
-//                 }) /* http://code.google.com/p/jsonpath/issues/detail?id=4 */
-//                 .replace(/'?\.'?|\['?/g, ";")
-//                 .replace(/;;;|;;/g, ";..;")
-//                 .replace(/;$|'?\]|'$/g, "")
-//                 .replace(/#([0-9]+)/g, function($0, $1) {
-//                     return subx[$1];
-//                 });
-//             },
-//             asPath: function(path) {
-//                 var x = path.split(";"), p = "$";
-//                 for (var i = 1, n = x.length; i < n; i++)
-//                     p += /^[0-9*]+$/.test(x[i]) ? ("[" + x[i] + "]") : ("['" + x[i] + "']");
-//                 return p;
-//             },
-//             store: function(p, v) {
-//                 if (p)
-//                     P.result[P.result.length] = P.resultType == "PATH" ? P.asPath(p) : v;
-//                 return !!p;
-//             },
-//             trace: function(expr, val, path) {
-//                 if (expr !== "") {
-//                     var x = expr.split(";"), loc = x.shift();
-//                     x = x.join(";");
-//                     if (val && val.hasOwnProperty(loc))
-//                         P.trace(x, val[loc], path + ";" + loc);
-//                     else if (loc === "*")
-//                         P.walk(loc, x, val, path, function(m, l, x, v, p) {
-//                             P.trace(m + ";" + x, v, p);
-//                         });
-//                     else if (loc === "..") {
-//                         P.trace(x, val, path);
-//                         P.walk(loc, x, val, path, function(m, l, x, v, p) {
-//                             typeof v[m] === "object" && P.trace("..;" + x, v[m], p + ";" + m);
-//                         });
-//                     } 
-//                     else if (/^\(.*?\)$/.test(loc)) // [(expr)]
-//                         P.trace(P.eval(loc, val, path.substr(path.lastIndexOf(";") + 1)) + ";" + x, val, path);
-//                     else if (/^\?\(.*?\)$/.test(loc)) // [?(expr)]
-//                         P.walk(loc, x, val, path, function(m, l, x, v, p) {
-//                             if (P.eval(l.replace(/^\?\((.*?)\)$/, "$1"), v instanceof Array ? v[m] : v, m))
-//                                 P.trace(m + ";" + x, v, p);
-//                         }); // issue 5 resolved
-//                     else if (/^(-?[0-9]*):(-?[0-9]*):?([0-9]*)$/.test(loc)) // [start:end:step]  phyton slice syntax
-//                         P.slice(loc, x, val, path);
-//                     else if (/,/.test(loc)) { // [name1,name2,...]
-//                         for (var s = loc.split(/'?,'?/), i = 0, n = s.length; i < n; i++)
-//                             P.trace(s[i] + ";" + x, val, path);
-//                     }
-//                 } 
-//                 else
-//                     P.store(path, val);
-//             },
-//             walk: function(loc, expr, val, path, f) {
-//                 if (val instanceof Array) {
-//                     for (var i = 0, n = val.length; i < n; i++)
-//                         if (i in val)
-//                             f(i, loc, expr, val, path);
-//                 } 
-//                 else if (typeof val === "object") {
-//                     for (var m in val)
-//                         if (val.hasOwnProperty(m))
-//                             f(m, loc, expr, val, path);
-//                 }
-//             },
-//             slice: function(loc, expr, val, path) {
-//                 if (val instanceof Array) {
-//                     var len = val.length, start = 0, end = len, step = 1;
-//                     loc.replace(/^(-?[0-9]*):(-?[0-9]*):?(-?[0-9]*)$/g, function($0, $1, $2, $3) {
-//                         start = parseInt($1 || start);
-//                         end = parseInt($2 || end);
-//                         step = parseInt($3 || step);
-//                     });
-//                     start = (start < 0) ? Math.max(0, start + len) : Math.min(len, start);
-//                     end = (end < 0) ? Math.max(0, end + len) : Math.min(len, end);
-//                     for (var i = start; i < end; i += step)
-//                         P.trace(i + ";" + expr, val, path);
-//                 }
-//             },
-//             eval: function(x, _v, _vname) {
-//                 try {
-//                     return $ && _v && eval(x.replace(/(^|[^\\])@/g, "$1_v").replace(/\\@/g, "@"));
-//                 }  // issue 7 : resolved ..
-//                 catch (e) {
-//                     throw new SyntaxError("jsonPath: " + e.message + ": " + x.replace(/(^|[^\\])@/g, "$1_v").replace(/\\@/g, "@"));
-//                 } // issue 7 : resolved ..
-//             }
-//         };
-        
-//         var $ = obj;
-//         if (expr && obj && (P.resultType == "VALUE" || P.resultType == "PATH")) {
-//             P.trace(P.normalize(expr).replace(/^\$;?/, ""), obj, "$"); // issue 6 resolved
-//             return P.result.length ? P.result : false;
-//         }
-//     }
 
 }));
