@@ -1,6 +1,8 @@
 # sUTL.js
 
-![sutl256.png](sUTL Universal Transformation Language)
+<p align="center">
+  <img src="sutl256.png" alt="sUTL Universal Transformation Language"/>
+</p>
 
 sUTL Universal Transformation Language
 
