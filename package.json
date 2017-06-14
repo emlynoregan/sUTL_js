@@ -1,0 +1,28 @@
+{
+  "name": "sUTL_js",
+  "version": "0.0.1",
+  "description": "sUTL Universal Transformation Language for Javascript",
+  "main": "sUTL.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/emlynoregan/sUTL_js.git"
+  },
+  "keywords": [
+    "transform",
+    "json",
+    "javascript",
+    "library"
+  ],
+  "author": "Emlyn O'Regan <emlynoregan@gmail.com>",
+  "contributors": [
+    "John Hardy <jh@lagado.com>"
+  ],
+  "license": "Apache 2.0",
+  "bugs": {
+    "url": "https://github.com/emlynoregan/sUTL_js/issues"
+  },
+  "homepage": "https://github.com/emlynoregan/sUTL_js#readme"
+}
