@@ -2,7 +2,7 @@
 'use strict';
 
 (function(root, factory) {
-    
+
     if (typeof exports === 'object' && exports) {
         factory(exports); // CommonJS
     } else {
@@ -15,7 +15,7 @@
     }
 
 }(this, function(sUTL) {
-    
+
     //exports
     sUTL.name = 'sUTL.js';
     sUTL.version = '0.0.0';
@@ -49,7 +49,7 @@
     }
 
     function _processPath(startfrom, parentscope, scope, l, src, tt, b, h)
-    {    
+    {
         var la = get(scope, "a", null);
         var lb = get(scope, "b", null);
         var lnotfirst = get(scope, "notfirst", false);
@@ -91,10 +91,10 @@
             {
                 for (var ix in a)
                 {
-                    var aItem = a[ix]; 
+                    var aItem = a[ix];
                     try
                     {
-                        if (b === "**") 
+                        if (b === "**")
                         {
                             retval.push(aItem);
                             var lstack = [aItem];
@@ -220,7 +220,7 @@
                 {
                     condvalue = IsTruthy(_evaluate(parentscope, scope["cond"], l, src, tt, b, h));
                 }
-                    
+
 
                 if (condvalue)
                 {
@@ -282,7 +282,7 @@
                         {
                             retval[entry[0]] = entry[1];
                         }
-                    } 
+                    }
 
                 }
                 return retval
@@ -321,7 +321,7 @@
                             t,
                             l, src, tt, b, h
                         )
-                    } 
+                    }
                 }
 
                 return accum;
@@ -412,7 +412,7 @@
                         retval = lvalue.split(lsep, lmax)
                     else
                         retval = lvalue.split(lsep)
-                } 
+                }
                 return retval;
             },
             "trim": function(parentscope, scope, l, src, tt, b, h)
@@ -427,7 +427,7 @@
                 else
                 {
                     retval = lvalue.trim();
-                } 
+                }
                 return retval;
             },
             "pos": function(parentscope, scope, l, src, tt, b, h)
@@ -447,7 +447,7 @@
                 else
                 {
                     retval = lvalue.indexOf(lsub);
-                } 
+                }
                 return retval;
             }
         }
@@ -500,7 +500,7 @@
         }
     }
 
-    function evaluate(src, tt, l, h) 
+    function evaluate(src, tt, l, h)
     {
         clearcost();
         var retval = _evaluate(src, tt, l, src, tt, builtins(), h)
@@ -522,7 +522,7 @@
         var done = false;
         var s1 = s;
         var t1 = t;
-        var l1 = l;
+        var l1 = l || {};
         var counter = 0;
 
         while (!done)
@@ -618,7 +618,7 @@
 
     function _getArrayBuiltinName(aOp)
     {
-        if (aOp.length) 
+        if (aOp.length)
             return aOp.slice(1);
         else
             return null;
@@ -642,7 +642,7 @@
 
         return _evaluateArrayBuiltin(s, larr2, l, src, tt, b, h)
     }
-    
+
     function _evaluateArrayBuiltin(s, t, l, src, tt, b, h)
     {
         var lop = t.slice(0, 1)
@@ -653,14 +653,14 @@
 
         var uset = {
             "&": _getArrayBuiltinName(lop),
-            "args": t.slice(1), 
+            "args": t.slice(1),
 //            "args": _evaluateList(s, t.slice(1), l, src, tt, b, h),
             "head": lopChar == "^"
         }
 
         return _evaluateBuiltin(s, uset, l, src, tt, b, dec(h))
     }
-    
+
     function _evaluateBuiltin(s, t, l, src, tt, b, h)
     {
         logenter("_evaluateBuiltin", s, t, h)
@@ -691,7 +691,7 @@
             {
                 // 2 or more items in the args list. Reduce over them
                 var list = _evaluateList(s, t["args"].slice(1), l, src, tt, b, dec(h));
-                
+
                 retval = _evaluate(s, t["args"][0], l, src, tt, b, dec(h));
 
                 for (var ix in list)
@@ -706,13 +706,13 @@
                     }
 
                     retval = _evaluateBuiltinSimple(false, s, uset, l, src, tt, b, dec(h))
-                } 
+                }
             }
 
             if (isArray(retval) && t["head"])
             {
                 if (retval.length)
-                    retval = retval[0] 
+                    retval = retval[0]
                 else
                     retval = null;
             }
@@ -736,7 +736,7 @@
 
         if (builtinf)
             llibname = "_override_" + t["&"]
-        else    
+        else
             llibname = t["&"]
 
         if (llibname in l)
@@ -752,7 +752,7 @@
             delete t2["&"]
 
             retval = _evaluateEval(s, t2, l, src, tt, b, dec(h))
-        } 
+        }
         else if (builtinf)
         {
             var s2 = {};
@@ -802,7 +802,7 @@
         	if (key !== "!")
 	            newscope[key] = t[key];
         }
-        
+
         if (IsTruthy(newscope))
         {
             t2 = {
@@ -816,7 +816,7 @@
               "!!": t["!"]
             };
         }
-        
+
     	return _evaluateEval2(s, t2, l, src, tt, b, h);
 	}
 
@@ -851,12 +851,12 @@
                     s2[key2] = ts[key2];
                 }
             }
-            else 
+            else
             {
                 s2 = ts;
             }
         }
-		
+
         var l2 = l;
         if ("*" in t)
         {
@@ -994,8 +994,8 @@
             var lop = arr.slice(0, 1)
             if (lop.length)
                 lop = lop[0]
-    
-            retval = 
+
+            retval =
                 isString(lop) &&
                 ((lop.slice(0, 1) == "&") || (lop.slice(0, 1) == "^")) &&
                 _getArrayBuiltinName(lop) in b;
@@ -1040,15 +1040,15 @@
     function isDictTransform(obj) {
         return !isArray(obj) && obj === Object(obj);
     }
-    
+
     function isListTransform(obj) {
         return Array.isArray(obj)
     }
-    
+
     function isObject(obj) {
         return !isArray(obj) && obj === Object(obj);
     }
-    
+
     function isArray(obj) {
         return Array.isArray(obj)
     }
@@ -1124,7 +1124,7 @@
 //             {
 //                 resultlib[declname] = decl
 //                 delete all_candidate_decls[declname]
-//             } 
+//             }
 //         }
 
         // get list of candidate decls for each reqname
@@ -1201,8 +1201,8 @@
                 for (var declreqix in declrequires)
                 {
                     declreq[declrequires[declreqix]] = null;
-                } 
-                
+                }
+
                 // decllib is resultlib filtered by names in decl.requires
                 var decllib = {}
                 for (var lname in resultlib)
@@ -1215,14 +1215,14 @@
                             decllib[llname] = resultliblib[lname][llname]
                         }
                     }
-                } 
-                
+                }
+
                 // evaluate the test. If truthy, the test fails
                 var fail = evaluate(get(decl, "transform-t", null), get(decl, "test-t", null), decllib)
                 if (fail)
                     fails = fails.concat(fail)
             }
-        } 
+        }
 
         if (fails.length)
             return {"fail": fails}
